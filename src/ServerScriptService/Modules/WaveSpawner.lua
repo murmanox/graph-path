@@ -1,5 +1,9 @@
+local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
 ---@type Enemy
-local Enemy = require(game.ReplicatedStorage.Modules.Enemy)
+local Enemy = EnemyModule.Enemy
+---@type EnemyFactory
+local EnemyFactory = EnemyModule.EnemyFactory
+
 local Waves = require(game.ReplicatedStorage.Configs.Waves)
 
 local RunService = game:GetService("RunService")
@@ -12,7 +16,7 @@ WaveSpawner.Settings = {
 	AutomaticallyStartNextWave = true,
 	WaveMustFinishBeforeNext = true,
 	EnemySpawnDelay = 2,
-	WaveSpawnDelay = 5,
+	WaveSpawnDelay = 1,
 }
 
 ---@return WaveSpawner
@@ -23,19 +27,32 @@ function WaveSpawner.new(paths)
 	self.paths = paths
 	self.waveNumber = 1
 	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
-	
 	self.waveInProgress = false
 	
-	RunService.Heartbeat:Connect(function(dt) self:OnHeartbeat(dt) end)
 	return self
 end
 
+function WaveSpawner:Start()
+	self._c = RunService.Heartbeat:Connect(function(dt) self:OnHeartbeat(dt) end)
+end
+
+function WaveSpawner:Stop()
+	print("Finished spawning wave")
+	self._c:Disconnect()
+	self:Reset()
+end
+
+function WaveSpawner:Reset()
+	self.waveNumber = 1
+	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
+	self.waveInProgress = false
+end
 
 function WaveSpawner:OnHeartbeat(dt)
 	if self.waveInProgress then
 		return
 	end
-	
+
 	print("Next wave in", math.ceil(self.countdown))
 	self.countdown = self.countdown - dt
 	
@@ -43,7 +60,6 @@ function WaveSpawner:OnHeartbeat(dt)
 		self:SpawnWave()
 		self.countdown = WaveSpawner.Settings.WaveSpawnDelay
 	end
-	
 end
 
 
@@ -56,7 +72,6 @@ function WaveSpawner:SpawnWave()
 	print("Starting Wave:", self.waveNumber)
 	self.waveInProgress = true
 	
-	-- this should be in the waves module
 	local wave = Waves[self.waveNumber]
 	for _, enemy in ipairs(wave) do
 		local enemyToSpawn = enemy[1]
@@ -70,11 +85,17 @@ function WaveSpawner:SpawnWave()
 	
 	self.waveInProgress = false
 	self.waveNumber = self.waveNumber + 1
+	if not Waves[self.waveNumber] then
+		self:Stop()
+	end
 end
 
 
 function WaveSpawner:SpawnEnemy(enemyType)
-	print("spawning enemy", enemyType)
+	print("spawning enemy:", enemyType)
+	local thread = Instance.new("BindableEvent")
+	thread.Event:Connect(function() EnemyFactory.SpawnEnemy(enemyType) end)
+	thread:Fire()
 end
 
 

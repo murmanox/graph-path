@@ -40,7 +40,7 @@ function initObstacles()
 		local o = Obstacle.new(obstacle, aList)
 		
 		o.Activated.Event:Connect(function()
-			table.remove(obstacles, table.find(obstacles, o))
+			table.remove(table.find(obstacles, o))
 		end)
 	end
 end
@@ -53,9 +53,14 @@ function initMap()
 	aList:setStart({aList["Marker1"]})
 	workspace.Level.Path:Destroy()
 	
+	-- temporary to test tower
+	local t = require(game.ReplicatedStorage.Modules.Towers.BaseTower).new(workspace.Tower)
+	
 	PathingService:SetGraph(aList)
-	--local wave_spawner = WaveSpawner.new(waves)
+	local wave_spawner = WaveSpawner.new()
+	wave_spawner:Start()
 end
 
+wait(2)
 initMap()
 

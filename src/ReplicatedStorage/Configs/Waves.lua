@@ -1,5 +1,6 @@
+local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
 ---@type Enemy
-local Enemy = require(game.ReplicatedStorage.Modules.Enemy)
+local Enemy = EnemyModule.Enemy
 
 
 local Wave = {}
@@ -20,19 +21,19 @@ end
 
 local Waves = {
 	[1] = {
-		--Wave.new({Enemy.Type.Standard, 3}),
 		{Enemy.Type.Standard, 3},
 	},
 	[2] = {
 		{Enemy.Type.Standard, 3},
 		{Enemy.Type.Fast, 2},
 	},
-	[3] = {
-		{Enemy.Type.Standard, 10},
-	},
-	[4] = {
-		{Enemy.Type.Fast, 10},
-	}
+	-- [3] = {
+	-- 	{Enemy.Type.Slow, 2},
+	-- 	{Enemy.Type.Standard, 10},
+	-- },
+	-- [4] = {
+	-- 	{Enemy.Type.Fast, 10},
+	-- }
 }
 
 return Waves

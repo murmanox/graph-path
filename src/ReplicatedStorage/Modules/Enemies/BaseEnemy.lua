@@ -1,3 +1,10 @@
+---@type ServerValue
+local ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
+---@type PathingService
+local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
+local TweenService = game:GetService("TweenService")
+
+local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
 ---@class BaseEnemy
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
@@ -5,15 +12,88 @@ BaseEnemy.__index = BaseEnemy
 ---@return BaseEnemy
 function BaseEnemy.new(stats)
 	---@type BaseEnemy
-	local self = setmetatable({}, BaseEnemy)
+	local self = setmetatable({
+		_connections = {},
+		_events = {
+			moveToCompleted = Instance.new("BindableEvent")
+		},
+	}, BaseEnemy)
 	
-	self.model = stats.model
-	self.health = stats.health
+	self.name = stats.name
+	self.model = stats.model:Clone()
+	self.maxHealth = stats.health
+	self.health = ServerValue.new(stats.health)
 	self.speed = stats.speed
-	self.movePart = self.model.PrimaryPart
-	self.currentWaypoint = nil
+	self.path = nil
 	
+	self.currentWaypoint = nil
+	self.nextWaypoint = nil
+	
+	self._connections.health = self.health.Changed:Connect(function(newValue)
+		if newValue <= 0 then
+			self:OnDead()
+		end
+	end)
+	
+	self.MoveToCompleted = self._events.moveToCompleted.Event
+
 	return self
+end
+
+function BaseEnemy:Destroy()
+	self.model:Destroy()
+	self._connections.health:Disconnect()
+	self = nil
+end
+
+function BaseEnemy:ShowGui()
+end
+
+function BaseEnemy:HideGui()
+end
+
+function BaseEnemy:ApplyDamage(damageValue)
+	self.health:Set(self.health:Get() - damageValue)
+end
+
+function BaseEnemy:OnDead()
+	print("I am dead :(")
+	self.model.Transparency = 0.75
+end
+
+function BaseEnemy:MoveTo(position, speed)
+	
+end
+
+function BaseEnemy:FollowPath()
+	for _, v in ipairs(self.path) do
+		self.nextWaypoint = v
+		
+		if self.currentWaypoint ~= self.nextWaypoint then
+			PathingService:LinkBetweenWaypointsExists(self.currentWaypoint, self.nextWaypoint)
+		end
+		local timeToMove = (self.model.Position - v.Position).Magnitude / self.speed
+		local tweenInfo = TweenInfo.new(timeToMove, Enum.EasingStyle.Linear)
+		local goal = {Position = v.Position}
+		local tween = TweenService:Create(self.model, tweenInfo, goal)
+		tween:Play()
+		tween.Completed:Wait()
+		self.currentWaypoint = self.nextWaypoint
+	end
+	self:Destroy()
+	--[[
+	for _, v in ipairs(self.path) do
+	local waypointIsValid = self.currentWaypoint ~= self.nextWaypoint
+		if waypointIsValid and  waypointLinkExists then
+			if PathingService:LinkBetweenWaypointsExists(self.currentWaypoint, self.nextWaypoint) then
+				-- path is valid, move to path
+				self:MoveTo(self.nextWaypoint.Position)
+		else
+			-- get new path
+			
+		end
+	end
+	]]
 end
 
 

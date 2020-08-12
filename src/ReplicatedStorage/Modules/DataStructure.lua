@@ -25,7 +25,6 @@ do	-- AdjacencyList
 
 		return self
 	end
-
 	
 	---@class AdjacencyList
 	local AdjacencyList = {}
@@ -103,7 +102,6 @@ do	-- AdjacencyList
 		
 		table.remove(node.Adjacencies, table.find(node.Adjacencies, link))
 	end
-
 	
 	function AdjacencyList:getPaths()
 		local paths = {}
@@ -116,11 +114,11 @@ do	-- AdjacencyList
 	function AdjacencyList.getPathsFromPoint(start, paths)
 		local function recursiveSearch(startNode, allPaths, currentPath)
 			currentPath = currentPath or {}
-			table.insert(currentPath, startNode.Position)
-
+			table.insert(currentPath, startNode)
+			
 			for _, node in pairs(startNode.Adjacencies) do
 				if #node.Adjacencies == 0 then
-					table.insert(currentPath, node.Position)
+					table.insert(currentPath, node)
 					table.insert(allPaths, currentPath)
 				else
 					local t = #startNode.Adjacencies > 1 and {unpack(currentPath)} or currentPath
@@ -128,7 +126,7 @@ do	-- AdjacencyList
 				end
 			end
 		end
-
+		
 		paths = paths or {}
 		recursiveSearch(start, paths)
 		return paths
@@ -138,7 +136,7 @@ do	-- AdjacencyList
 		local function recursiveSearch(startNode, endNode, allPaths, currentPath)
 			currentPath = currentPath or {}
 			table.insert(currentPath, startNode.Name)
-
+			
 			for _, node in pairs(startNode.Adjacencies) do
 				if node == endNode then
 					table.insert(currentPath, node.Name)
@@ -149,10 +147,14 @@ do	-- AdjacencyList
 				end
 			end
 		end
-
+		
 		paths = paths or {}
 		recursiveSearch(startNode, endNode, paths)
 		return paths
+	end
+
+	function AdjacencyList:LinkExists(node1, node2)
+		return (table.find(node1.Adjacencies, node2) or table.find(node2.Adjacencies, node1)) ~= nil
 	end
 
 	module.AdjacencyList = AdjacencyList

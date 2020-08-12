@@ -41,5 +41,8 @@ function PathingService:GetNextPath()
 	return self._paths[self.currentPath]
 end
 
+function PathingService:LinkBetweenWaypointsExists(waypoint1, waypoint2)
+	return self.graph:LinkExists(waypoint1, waypoint2)
+end
 
 return PathingService.new()
