@@ -22,7 +22,7 @@ function FastEnemy.new()
 	self.model.Position = self.currentWaypoint.Position
 	self.model.Parent = workspace.Level.Enemies
 	
-	self:FollowPath()
+	coroutine.wrap(function() self:FollowPath() end)()
 	
 	return self
 end

@@ -1,6 +1,15 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local stats = {
+---@type EnemyStats
+type EnemyStats = {
+	health: number,
+	speed: number,
+	name: string,
+	model: BasePart
+}
+
+local stats: {[string]: EnemyStats} = {
 	Standard = {
 		health = 100,
 		speed = 8,

@@ -1,5 +1,91 @@
 {
     "Lua.diagnostics.disable": [
         "lowercase-global"
-    ]
+    ],
+    "workbench.tree.indent": 20,
+    "workbench.iconTheme": "vscode-icons",
+    "vsicons.associations.files": [
+        {
+            "icon": "lua_server",
+            "extensions": ["server.lua"],
+            "format": "png"
+        },
+        {
+            "icon": "lua_client",
+            "extensions": ["client.lua"],
+            "format": "png"
+        },
+        {
+            "icon": "lua_module",
+            "extensions": ["lua"],
+            "format": "png"
+        },
+        {
+            "icon": "studio",
+            "extensions": ["rbxlx", "rbxl"],
+            "format": "png"
+        },
+        {
+            "icon": "studiolocked",
+            "extensions": ["rbxlx.lock", "rbxl.lock"],
+            "format": "png"
+        },
+        {
+            "icon": "square",
+            "extensions": ["meta.json"],
+            "format": "png"
+        },
+        {
+            "icon": "gear",
+            "extensions": ["project.json"],
+            "format": "png"
+        },
+        {
+            "icon": "information",
+            "extensions": ["md"],
+            "format": "png"
+        },
+        {
+            "icon": "bullet",
+            "extensions": [".gitignore"],
+            "format": "png"
+        }
+    ],
+    "vsicons.associations.folders": [
+        {
+            "icon": "game",
+            "extensions": ["src"],
+            "format": "png"
+        },
+        {
+            "icon": "serverscriptservice",
+            "extensions": ["ServerScriptService"],
+            "format": "png"
+        },
+        {
+            "icon": "studio",
+            "extensions": ["client", "server", "Modules", "Configs", "Services"],
+            "format": "png"
+        },
+        {
+            "icon": "replicated",
+            "extensions": ["ReplicatedStorage", "ReplicatedFirst"],
+            "format": "png"
+        },
+        {
+            "icon": "ServerScriptService",
+            "extensions": ["ServerScriptService"],
+            "format": "png"
+        },
+        {
+            "icon": "ServerStorage",
+            "extensions": ["ServerStorage"],
+            "format": "png"
+        },
+    ],
+    "vsicons.associations.folderDefault.folder": {
+        "icon": "studio",
+        "format": "png"
+    },
+    "vsicons.customIconFolderPath": "C:\\Users\\Adam-\\AppData\\Roaming\\Code\\User",
 }

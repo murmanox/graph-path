@@ -1,12 +1,7 @@
----@type PathingService
-local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 ---@type StandardEnemy
 local StandardEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyStandard)
 local FastEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast)
 local SlowEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast)
-local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
-
-local EnemyModels = game.ReplicatedStorage.Enemies
 
 local module = {}
 
@@ -23,12 +18,11 @@ local function newEnemyType(name, class)
 	return t
 end
 
-local str = "Hello world, today I'm trying to learn Vim!"
-local CONSTANT_VARIABLE = "this is a value"
 
 ---@class Enemy
 local Enemy = {}
 Enemy.__index = Enemy
+Enemy.Pool = {}
 
 Enemy.Type, Enemy._TypeMetatable = {
 	Standard = newEnemyType("Standard", StandardEnemy),
@@ -41,37 +35,28 @@ Enemy.Type, Enemy._TypeMetatable = {
 }
 setmetatable(Enemy.Type, Enemy._TypeMetatable)
 
---[[
----@return Enemy
-function Enemy.new(enemyClass)
-	
-	local self = setmetatable(enemyClass.new(), Enemy)
-	
-	return self
+
+function Enemy.GetEnemyFromInstance(instance)
+	return Enemy.Pool[instance]
 end
 
-function Enemy:_getMovePart()
-	local movePart
-	if self.model:IsA("BasePart") then
-		movePart = self.model
-	else
-		movePart = self.model.PrimaryPart or self.model:FindFirstChild("HumanoidRootPart")
-	end
-	
-	return movePart
+function Enemy.RemoveEnemyFromPool(enemy)
+	Enemy.Pool[enemy.model] = nil
 end
-
-function Enemy:SetPosition(position, lookAt)
-	self.movePart.CFrame = CFrame.new(unpack({position, lookAt}))
-end
-]]
 
 ---@class EnemyFactory
 local EnemyFactory = {}
 
 ---@return EnemyFactory
 function EnemyFactory.SpawnEnemy(enemyType)
-	return enemyType.new()
+	local e = enemyType.new()
+	Enemy.Pool[e.model] = e
+	local diedEvent
+	diedEvent = e.Died:Connect(function()
+		Enemy.RemoveEnemyFromPool(e)
+		diedEvent:Disconnect()
+	end)
+	return e
 end
 
 module.Enemy = Enemy

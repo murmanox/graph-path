@@ -1,5 +1,4 @@
----@type BaseEnemy
-local BaseEnemy = require(game.ReplicatedStorage.Modules.Enemies.BaseEnemy)
+local BaseEnemy: BaseEnemy = require(game.ReplicatedStorage.Modules.Enemies.BaseEnemy)
 ---@type PathingService
 local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
@@ -22,7 +21,9 @@ function StandardEnemy.new()
 	self.model.Position = self.currentWaypoint.Position
 	self.model.Parent = workspace.Level.Enemies
 	
-	self:FollowPath()
+	coroutine.wrap(function()
+		self:FollowPath()
+	end)()
 	
 	return self
 end

@@ -54,7 +54,7 @@ function initMap()
 	workspace.Level.Path:Destroy()
 	
 	-- temporary to test tower
-	local t = require(game.ReplicatedStorage.Modules.Towers.BaseTower).new(workspace.Tower)
+	local t = require(game.ReplicatedStorage.Modules.Towers.BaseTower).new(require(game.ReplicatedStorage.Configs.TowerStats).Standard)
 	
 	PathingService:SetGraph(aList)
 	local wave_spawner = WaveSpawner.new()
@@ -63,4 +63,3 @@ end
 
 wait(2)
 initMap()
-

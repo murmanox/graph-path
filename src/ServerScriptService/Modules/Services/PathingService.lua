@@ -45,4 +45,5 @@ function PathingService:LinkBetweenWaypointsExists(waypoint1, waypoint2)
 	return self.graph:LinkExists(waypoint1, waypoint2)
 end
 
+-- debugging.print("Pathing Service Initialised")
 return PathingService.new()

@@ -1,21 +1,21 @@
----@type ServerValue
-local ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
----@type PathingService
-local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
+local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
+local ServerValue: ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
+local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local TweenService = game:GetService("TweenService")
 
 local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
+
 ---@class BaseEnemy
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
 
 ---@return BaseEnemy
-function BaseEnemy.new(stats)
-	---@type BaseEnemy
-	local self = setmetatable({
+function BaseEnemy.new(stats: EnemyStats): BaseEnemy
+	local self: BaseEnemy = setmetatable({
 		_connections = {},
 		_events = {
-			moveToCompleted = Instance.new("BindableEvent")
+			moveToCompleted = Instance.new("BindableEvent"),
+			died = Instance.new("BindableEvent"),
 		},
 	}, BaseEnemy)
 	
@@ -25,6 +25,7 @@ function BaseEnemy.new(stats)
 	self.health = ServerValue.new(stats.health)
 	self.speed = stats.speed
 	self.path = nil
+	self.isAlive = true
 	
 	self.currentWaypoint = nil
 	self.nextWaypoint = nil
@@ -36,6 +37,7 @@ function BaseEnemy.new(stats)
 	end)
 	
 	self.MoveToCompleted = self._events.moveToCompleted.Event
+	self.Died = self._events.died.Event
 
 	return self
 end
@@ -43,7 +45,6 @@ end
 function BaseEnemy:Destroy()
 	self.model:Destroy()
 	self._connections.health:Disconnect()
-	self = nil
 end
 
 function BaseEnemy:ShowGui()
@@ -52,13 +53,14 @@ end
 function BaseEnemy:HideGui()
 end
 
-function BaseEnemy:ApplyDamage(damageValue)
+function BaseEnemy:TakeDamage(damageValue)
 	self.health:Set(self.health:Get() - damageValue)
 end
 
 function BaseEnemy:OnDead()
 	print("I am dead :(")
 	self.model.Transparency = 0.75
+	self._events.died:Fire()
 end
 
 function BaseEnemy:MoveTo(position, speed)
