@@ -5,6 +5,7 @@
     "workbench.tree.indent": 20,
     "workbench.iconTheme": "vscode-icons",
     "vsicons.associations.files": [
+        
         {
             "icon": "lua_server",
             "extensions": ["server.lua"],
@@ -64,7 +65,7 @@
         },
         {
             "icon": "studio",
-            "extensions": ["client", "server", "Modules", "Configs", "Services"],
+            "extensions": ["Modules", "Configs", "Services", "Controllers", "Settings", "Components"],
             "format": "png"
         },
         {
@@ -87,5 +88,4 @@
         "icon": "studio",
         "format": "png"
     },
-    "vsicons.customIconFolderPath": "C:\\Users\\Adam-\\AppData\\Roaming\\Code\\User",
 }

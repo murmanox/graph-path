@@ -60,26 +60,26 @@
 			<Properties>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<CoordinateFrame name="CFrame">
-					<X>0</X>
-					<Y>0</Y>
-					<Z>0</Z>
-					<R00>1</R00>
-					<R01>0</R01>
-					<R02>0</R02>
-					<R10>-0</R10>
-					<R11>1</R11>
-					<R12>0</R12>
-					<R20>-0</R20>
-					<R21>-0</R21>
-					<R22>1</R22>
+					<X>3.97219777</X>
+					<Y>20.2661037</Y>
+					<Z>34.0187721</Z>
+					<R00>0.00631578267</R00>
+					<R01>-0.987668753</R01>
+					<R02>0.156431258</R02>
+					<R10>-5.82076679e-11</R10>
+					<R11>0.156434402</R11>
+					<R12>0.987688363</R12>
+					<R20>-0.999980152</R20>
+					<R21>-0.00623802515</R21>
+					<R22>0.000988005311</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
 				<float name="FieldOfView">70</float>
 				<CoordinateFrame name="Focus">
-					<X>0</X>
-					<Y>0</Y>
-					<Z>0</Z>
+					<X>1</X>
+					<Y>1.5</Y>
+					<Z>34</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -5415,10 +5415,9 @@ return module]]></ProtectedString>
 						<Content name="LinkedSource"><null></null></Content>
 						<string name="Name">BaseEnemy</string>
 						<string name="ScriptGuid">{DF14C524-080D-485E-A334-CA55BF2D3983}</string>
-						<ProtectedString name="Source"><![CDATA[---@type ServerValue
-local ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
----@type PathingService
-local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
+						<ProtectedString name="Source"><![CDATA[local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
+local ServerValue: ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
+local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local TweenService = game:GetService("TweenService")
 
 local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
@@ -5427,7 +5426,8 @@ local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
 
-function BaseEnemy.new(stats: table): BaseEnemy
+---@return BaseEnemy
+function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	local self: BaseEnemy = setmetatable({
 		_connections = {},
 		_events = {
@@ -5462,7 +5462,6 @@ end
 function BaseEnemy:Destroy()
 	self.model:Destroy()
 	self._connections.health:Disconnect()
-	self = nil
 end
 
 function BaseEnemy:ShowGui()
@@ -13967,11 +13966,12 @@ return Waves]]></ProtectedString>
 					<ProtectedString name="Source"><![CDATA[--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+---@type EnemyStats
 type EnemyStats = {
 	health: number,
 	speed: number,
 	name: string,
-	model: BasePart | Model
+	model: BasePart
 }
 
 local stats: {[string]: EnemyStats} = {
@@ -13979,8 +13979,7 @@ local stats: {[string]: EnemyStats} = {
 		health = 100,
 		speed = 8,
 		name = "Standard",
-		model = ReplicatedStorage.Enemies.Standard,
-		test = 1
+		model = ReplicatedStorage.Enemies.Standard
 	},
 	Fast = {
 		health = 50,

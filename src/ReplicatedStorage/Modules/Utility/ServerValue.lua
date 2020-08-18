@@ -29,7 +29,7 @@ function ServerValue.new(value, overrideClass)
 	local t = typeof(value)
 	local valueType = overrideClass or valueMap[t]
 	
-	assert(valueType ~= nil)
+	assert(valueType ~= nil, "type of passed value is not recognised")
 	
 	---@type ServerValue
 	local self = setmetatable({
@@ -45,8 +45,8 @@ function ServerValue.new(value, overrideClass)
 end
 
 function ServerValue:Set(value)
-	self._object.Value = value
 	self._value = value
+	self._object.Value = value
 end
 
 function ServerValue:Get()

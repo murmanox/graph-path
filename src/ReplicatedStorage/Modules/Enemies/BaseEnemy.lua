@@ -1,5 +1,5 @@
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
-local ServerValue: ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
+local Health: Health = require(game.ReplicatedStorage.Modules.Components.Health)
 local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local TweenService = game:GetService("TweenService")
 
@@ -19,10 +19,10 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 		},
 	}, BaseEnemy)
 	
+	-- init values
 	self.name = stats.name
 	self.model = stats.model:Clone()
-	self.maxHealth = stats.health
-	self.health = ServerValue.new(stats.health)
+	self.health = Health.new(stats.health)
 	self.speed = stats.speed
 	self.path = nil
 	self.isAlive = true
@@ -30,21 +30,18 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	self.currentWaypoint = nil
 	self.nextWaypoint = nil
 	
-	self._connections.health = self.health.Changed:Connect(function(newValue)
-		if newValue <= 0 then
-			self:OnDead()
-		end
-	end)
-	
+	-- init events
 	self.MoveToCompleted = self._events.moveToCompleted.Event
 	self.Died = self._events.died.Event
+	
+	-- memory leak here, make object to handle connections
+	self.health.Died:Connect(function() self:OnDead() end)
 
 	return self
 end
 
 function BaseEnemy:Destroy()
 	self.model:Destroy()
-	self._connections.health:Disconnect()
 end
 
 function BaseEnemy:ShowGui()
@@ -53,8 +50,8 @@ end
 function BaseEnemy:HideGui()
 end
 
-function BaseEnemy:TakeDamage(damageValue)
-	self.health:Set(self.health:Get() - damageValue)
+function BaseEnemy:TakeDamage(damage: number)
+	self.health:TakeDamage(damage)
 end
 
 function BaseEnemy:OnDead()

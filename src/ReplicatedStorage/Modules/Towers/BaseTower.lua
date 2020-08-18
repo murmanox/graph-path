@@ -12,6 +12,7 @@ function BaseTower.new(stats)
 	
 	self.range = stats.range
 	self.speed = stats.speed
+	self.damage = stats.damage
 	self.timeBetweenShots = 1 / self.speed
 	self.model = stats.model
 	self.name = stats.name
@@ -29,7 +30,7 @@ function BaseTower:ShootAt(target)
 	if not target then return end
 	self.cooldown = self.timeBetweenShots
 	self.model.CFrame = CFrame.new(self.model.Position, target.model.Position)
-	target:TakeDamage(100)
+	target:TakeDamage(self.damage)
 end
 
 function BaseTower:FindTarget()
