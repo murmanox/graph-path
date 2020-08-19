@@ -49,17 +49,33 @@ function Health.new(maxHealth: number, startingHealth: number?): Health
 end
 
 function Health:TakeDamage(damage)
-	self._health:Set(math.max(self._health:Get() - damage, 0))
-	self._events.damaged:Fire(damage)
+	local currentHealth = self._health:Get()
+	local damageToTake = damage >= currentHealth and currentHealth or damage
+	self:SetHealth(currentHealth - damageToTake)
+	self._events.damaged:Fire(damageToTake)
 end
 
 function Health:Heal(healAmount)
-	self._health:Set(math.min(self._health:Get() + healAmount, self._maxHealth))
-	self._events.healed:Fire(healAmount)
+	local amountToHeal = math.min(self._health:Get() + healAmount, self._maxHealth)
+	self:SetHealth(amountToHeal)
+	self._events.healed:Fire(amountToHeal)
 end
 
-function Health:SetMaxHealth(newHealthValue)
-	
+function Health:GetMaxHealth()
+	return self._maxHealth:Get()
+end
+
+function Health:SetMaxHealth(newMaxHealthValue)
+	self._maxHealth:Set(newMaxHealthValue)
+end
+
+function Health:GetHealth()
+	return self._health:Get()
+end
+
+function Health:SetHealth(newHealthValue)
+	local healthToSet = math.clamp(newHealthValue, 0, self._maxHealth:Get())
+	self._health:Set(healthToSet)
 end
 
 return Health
