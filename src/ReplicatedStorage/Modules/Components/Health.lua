@@ -49,7 +49,7 @@ function Health.new(maxHealth: number, startingHealth: number?): Health
 end
 
 function Health:TakeDamage(damage)
-	local currentHealth = self._health:Get()
+	local currentHealth = self:GetHealth()
 	local damageToTake = damage >= currentHealth and currentHealth or damage
 	self:SetHealth(currentHealth - damageToTake)
 	self._events.damaged:Fire(damageToTake)
