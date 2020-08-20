@@ -3,7 +3,6 @@ type Health = {}
 
 --[[
 	Events:
-		Died: Fires when health reaches 0
 		Damaged: Fires whenever current health is reduced
 			Params:
 				damage taken: number
@@ -28,7 +27,6 @@ function Health.new(maxHealth: number, startingHealth: number?): Health
 			healed = Instance.new("BindableEvent"),
 			damaged = Instance.new("BindableEvent"),
 			changed = Instance.new("BindableEvent"),
-			died = Instance.new("BindableEvent"),
 		},
 	}
 	
@@ -36,13 +34,9 @@ function Health.new(maxHealth: number, startingHealth: number?): Health
 	self.Healed = self._events.healed.Event
 	self.Damaged = self._events.damaged.Event
 	self.Changed = self._events.changed.Event
-	self.Died = self._events.died.Event
 	
 	local onHealthChanged = function()
 		self._events.changed:Fire(self._health:Get(), self._maxHealth:Get())
-		if self._health:Get() <= 0 then
-			self._events.died:Fire()
-		end
 	end
 	
 	self._connections = {
