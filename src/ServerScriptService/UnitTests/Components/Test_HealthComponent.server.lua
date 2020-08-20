@@ -110,5 +110,4 @@ end
 wait(4)
 testCase(#reference, 0, "object is garbage collected when it is destroyed and out of scope")
 
-
 assertFinished()
