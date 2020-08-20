@@ -35,7 +35,11 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	self.Died = self._events.died.Event
 	
 	-- memory leak here, make object to handle connections
-	self.health.Died:Connect(function() self:OnDead() end)
+	self.health.Changed:Connect(function(healthValue)
+		if self.isAlive and healthValue <= 0 then
+			self:OnDead()
+		end
+	end)
 
 	return self
 end
