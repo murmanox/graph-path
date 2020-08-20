@@ -5,7 +5,11 @@ type Health = {}
 	Events:
 		Died: Fires when health reaches 0
 		Damaged: Fires whenever current health is reduced
+			Params:
+				damage taken: number
 		Healed: Fires whenever current health is increased
+			Params:
+				amount healed: number
 		Changed: Fires whenever the current health or max health changes
 			Params:
 				current health: number
