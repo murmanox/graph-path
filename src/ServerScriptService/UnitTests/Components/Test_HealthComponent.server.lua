@@ -13,7 +13,7 @@ function testCase(v1: any, v2: any, message: string)
 		successCount += 1
 	else
 		failureCount += 1
-		table.insert(failedMessages, message .. ", Expected: " .. v2 .. " Got: " .. v1)
+		table.insert(failedMessages, message .. ", Expected: " .. tostring(v2) .. " Got: " .. tostring(v1))
 	end
 end
 
@@ -90,5 +90,25 @@ testCase(amountHealed, 10, "correct heal value returned for less than max health
 fullHealth:Heal(10)
 testCase(fullHealth:GetHealth(), fullHealth:GetMaxHealth(), "can't heal above max health")
 testCase(amountHealed, 5, "health healed past max health is ignored")
+
+-- Test cleanup
+local reference
+do
+	local healthObject = health.new(100)
+	healthObject.Damaged:Connect(function(value)
+		print(healthObject)
+	end)
+	reference = setmetatable({
+		healthObject,
+		healthObject._events,
+		healthObject._events.damaged,
+	}, {
+		__mode = "v"
+	})
+	healthObject:Destroy()
+end
+wait(4)
+testCase(#reference, 0, "object is garbage collected when it is destroyed and out of scope")
+
 
 assertFinished()

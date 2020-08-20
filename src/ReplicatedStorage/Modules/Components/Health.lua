@@ -24,7 +24,6 @@ function Health.new(maxHealth: number, startingHealth: number?): Health
 	local self: Health = {
 		_maxHealth = ServerValue.new(maxHealth),
 		_health = ServerValue.new(startingHealth or maxHealth),
-		_dead = false,
 		_events = {
 			healed = Instance.new("BindableEvent"),
 			damaged = Instance.new("BindableEvent"),
@@ -46,8 +45,10 @@ function Health.new(maxHealth: number, startingHealth: number?): Health
 		end
 	end
 	
-	self._maxHealth.Changed:Connect(onHealthChanged)
-	self._health.Changed:Connect(onHealthChanged)
+	self._connections = {
+		maxHealth = self._maxHealth.Changed:Connect(onHealthChanged),
+		health = self._health.Changed:Connect(onHealthChanged),
+	}
 
 	return setmetatable(self, Health)
 end
@@ -82,6 +83,20 @@ end
 function Health:SetHealth(newHealthValue)
 	local healthToSet = math.clamp(newHealthValue, 0, self._maxHealth:Get())
 	self._health:Set(healthToSet)
+end
+
+-- Prepares Health for garbage collection once all references to it fall out of scope or are nil
+function Health:Destroy()
+	for k, v in pairs(self._connections) do
+		if v.Disconnect then
+			v:Disconnect()
+		end
+	end
+	for k, v in pairs(self._events) do
+		if v.Destroy then
+			v:Destroy()
+		end
+	end
 end
 
 return Health
