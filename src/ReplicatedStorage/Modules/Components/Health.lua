@@ -56,8 +56,10 @@ function Health:TakeDamage(damage)
 end
 
 function Health:Heal(healAmount)
-	local amountToHeal = math.min(self._health:Get() + healAmount, self._maxHealth)
-	self:SetHealth(amountToHeal)
+	local currentHealth = self:GetHealth()
+	local missingHealth = self:GetMaxHealth() - currentHealth
+	local amountToHeal = healAmount <= missingHealth and healAmount or missingHealth
+	self:SetHealth(currentHealth + amountToHeal)
 	self._events.healed:Fire(amountToHeal)
 end
 
