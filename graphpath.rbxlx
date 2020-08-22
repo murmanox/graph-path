@@ -60,18 +60,18 @@
 			<Properties>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<CoordinateFrame name="CFrame">
-					<X>3.97219777</X>
-					<Y>20.2661037</Y>
-					<Z>34.0187721</Z>
-					<R00>0.00631578267</R00>
-					<R01>-0.987668753</R01>
-					<R02>0.156431258</R02>
-					<R10>-5.82076679e-11</R10>
-					<R11>0.156434402</R11>
-					<R12>0.987688363</R12>
-					<R20>-0.999980152</R20>
-					<R21>-0.00623802515</R21>
-					<R22>0.000988005311</R22>
+					<X>-3.53133249</X>
+					<Y>25.0607929</Y>
+					<Z>34.6011391</Z>
+					<R00>0.131510541</R00>
+					<R01>0.97316891</R01>
+					<R02>-0.188804641</R02>
+					<R10>-0</R10>
+					<R11>0.190458819</R11>
+					<R12>0.981695175</R12>
+					<R20>0.991314769</R20>
+					<R21>-0.129103258</R21>
+					<R22>0.0250473451</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
@@ -3627,6 +3627,18 @@ return module]]></ProtectedString>
 					<Z>512</Z>
 				</Vector3>
 			</Properties>
+			<Item class="BodyForce" referent="RBX70ABF99AC3714500BA0A15A90ABB45A6">
+				<Properties>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<Vector3 name="Force">
+						<X>0</X>
+						<Y>1</Y>
+						<Z>0</Z>
+					</Vector3>
+					<string name="Name">BodyForce</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
 		</Item>
 		<Item class="Part" referent="RBXC68A07BCC4D94B60994A55A772A4666A">
 			<Properties>
@@ -4296,68 +4308,6 @@ return module]]></ProtectedString>
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="ModuleScript" referent="RBX340B65964F0142B885A70356F6D6C8AA">
-			<Properties>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<Content name="LinkedSource"><null></null></Content>
-				<string name="Name">Vector6</string>
-				<string name="ScriptGuid">{0EF59479-17D5-4170-B0DC-845927872105}</string>
-				<ProtectedString name="Source"><![CDATA[--!strict
-type Vector6 = {
-	X: number;
-	Y: number;	
-	Z: number;
-	XY: number;	
-	XZ: number;
-	YZ: number;
-	Magnitude: number;
-	Unit: Vector6
-}
-
-local v6 = {}
-
-function v6.new(x:number, y:number, z:number) => Vector6
-	local magnitude = (x^2)*(y^2)*(z^2)*((x+y)^2)*((x+z)^2)*((y+z)^2)
-	
-	local unit : Vector6
-	
-	local unit : Vector6 = {
-		X = x/magnitude,
-		Y = y/magnitude,
-		Z = z/magnitude,
-		XY = (x+y)/magnitude,
-		XZ = (x+z)/magnitude,
-		YZ = (y+z)/magnitude,
-		Magnitude = 1;
-		Unit = unit
-	}	
-	
-	return {
-		X = x, 
-		Y = y, 
-		Z = z,
-		XY = x+y,
-		XZ = x+z,
-		YZ = y+z,
-		Magnitude = magnitude,
-		Unit = unit
-	}
-end
-
-function v6.fromAxis(axis:any)
-	local vector = Vector3.FromAxis(axis)
-	return v6.new(vector.X, vector.Y, vector.Z)
-end
-
-function v6.fromNormalId(normal:any)
-	local vector = Vector3.FromNormalId(normal)
-	return v6.new(vector.X, vector.Y, vector.Z)
-end
-
-return v6]]></ProtectedString>
-				<BinaryString name="Tags"></BinaryString>
-			</Properties>
-		</Item>
 	</Item>
 	<Item class="SoundService" referent="RBX5D53246B314C456C8C140F18AC5215D1">
 		<Properties>
@@ -4535,6 +4485,115 @@ game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)]]></ProtectedStr
 			<bool name="ShowDevelopmentGui">true</bool>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
+		<Item class="ScreenGui" referent="RBXAD83423993464DAF8F1804043EC6DB2C">
+			<Properties>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<bool name="AutoLocalize">true</bool>
+				<int name="DisplayOrder">0</int>
+				<bool name="Enabled">true</bool>
+				<bool name="IgnoreGuiInset">true</bool>
+				<string name="Name">ScreenGui</string>
+				<bool name="ResetOnSpawn">true</bool>
+				<Ref name="RootLocalizationTable">null</Ref>
+				<BinaryString name="Tags"></BinaryString>
+				<token name="ZIndexBehavior">1</token>
+			</Properties>
+			<Item class="TextLabel" referent="RBX4BC44C32A47D4FED91A4CE705144D51F">
+				<Properties>
+					<bool name="Active">true</bool>
+					<Vector2 name="AnchorPoint">
+						<X>0</X>
+						<Y>0</Y>
+					</Vector2>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<bool name="AutoLocalize">true</bool>
+					<Color3 name="BackgroundColor3">
+						<R>1</R>
+						<G>1</G>
+						<B>1</B>
+					</Color3>
+					<float name="BackgroundTransparency">0</float>
+					<Color3 name="BorderColor3">
+						<R>0.105882362</R>
+						<G>0.164705887</G>
+						<B>0.207843155</B>
+					</Color3>
+					<token name="BorderMode">0</token>
+					<int name="BorderSizePixel">1</int>
+					<bool name="ClipsDescendants">false</bool>
+					<bool name="Draggable">false</bool>
+					<token name="Font">3</token>
+					<int name="LayoutOrder">0</int>
+					<float name="LineHeight">1</float>
+					<string name="Name">TextLabel</string>
+					<Ref name="NextSelectionDown">null</Ref>
+					<Ref name="NextSelectionLeft">null</Ref>
+					<Ref name="NextSelectionRight">null</Ref>
+					<Ref name="NextSelectionUp">null</Ref>
+					<UDim2 name="Position">
+						<XS>0.873257279</XS>
+						<XO>0</XO>
+						<YS>0.911347508</YS>
+						<YO>0</YO>
+					</UDim2>
+					<bool name="RichText">false</bool>
+					<Ref name="RootLocalizationTable">null</Ref>
+					<float name="Rotation">0</float>
+					<bool name="Selectable">true</bool>
+					<Ref name="SelectionImageObject">null</Ref>
+					<UDim2 name="Size">
+						<XS>0</XS>
+						<XO>200</XO>
+						<YS>0</YS>
+						<YO>50</YO>
+					</UDim2>
+					<token name="SizeConstraint">0</token>
+					<BinaryString name="Tags"></BinaryString>
+					<string name="Text"></string>
+					<Color3 name="TextColor3">
+						<R>0</R>
+						<G>0</G>
+						<B>0</B>
+					</Color3>
+					<bool name="TextScaled">true</bool>
+					<float name="TextSize">14</float>
+					<Color3 name="TextStrokeColor3">
+						<R>0</R>
+						<G>0</G>
+						<B>0</B>
+					</Color3>
+					<float name="TextStrokeTransparency">1</float>
+					<float name="TextTransparency">0</float>
+					<token name="TextTruncate">0</token>
+					<bool name="TextWrapped">true</bool>
+					<token name="TextXAlignment">2</token>
+					<token name="TextYAlignment">1</token>
+					<bool name="Visible">true</bool>
+					<int name="ZIndex">1</int>
+				</Properties>
+				<Item class="Script" referent="RBX055242D226B640CEB40953023B1C5A49">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<bool name="Disabled">false</bool>
+						<Content name="LinkedSource"><null></null></Content>
+						<string name="Name">Script</string>
+						<string name="ScriptGuid">{54E851EB-9E9B-46FE-9DFA-4BDB77DD63A3}</string>
+						<ProtectedString name="Source"><![CDATA[local EnemyController = require(game.ReplicatedStorage.Modules.EnemyController)
+
+script.Parent.Text = #EnemyController.EnemyPool._pool
+
+local function updateLabel(newValue)
+	print(newValue)
+	script.Parent.Text = tostring(newValue)
+end
+
+EnemyController.EnemyAdded:Connect(updateLabel)
+EnemyController.EnemyRemoved:Connect(updateLabel)]]></ProtectedString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+			</Item>
+		</Item>
 	</Item>
 	<Item class="LocalizationService" referent="RBXE93904E7D7844616A04B66DA7964ED07">
 		<Properties>
@@ -4671,11 +4730,12 @@ game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)]]></ProtectedStr
 					<Content name="LinkedSource"><null></null></Content>
 					<string name="Name">WaveSpawner</string>
 					<string name="ScriptGuid">{BFA7D618-6DA1-46CD-A466-BCF9713B57A9}</string>
-					<ProtectedString name="Source"><![CDATA[local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
+					<ProtectedString name="Source"><![CDATA[local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.EnemyController)
+local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
 ---@type Enemy
 local Enemy = EnemyModule.Enemy
 ---@type EnemyFactory
-local EnemyFactory = EnemyModule.EnemyFactory
+--local EnemyFactory = EnemyModule.EnemyFactory
 
 local Waves = require(game.ReplicatedStorage.Configs.Waves)
 
@@ -4692,15 +4752,29 @@ WaveSpawner.Settings = {
 	WaveSpawnDelay = 1,
 }
 
+local enemyWaveMap = {
+	Remove = function(self, e)
+		self[e] = nil
+	end,
+}
+
 ---@return WaveSpawner
 function WaveSpawner.new(paths)
 	---@type WaveSpawner
-	local self = setmetatable({}, WaveSpawner)
+	local self = setmetatable({
+		_events = {
+			waveFinished = Instance.new("BindableEvent")
+		}
+	}, WaveSpawner)
 	
 	self.paths = paths
 	self.waveNumber = 1
 	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
-	self.waveInProgress = false
+	self.isWaveInProgress = false
+	self.isSpawningEnemies = false
+	self.enemiesInWave = {}
+	
+	self.WaveFinished = self._events.waveFinished.Event
 	
 	return self
 end
@@ -4718,11 +4792,11 @@ end
 function WaveSpawner:Reset()
 	self.waveNumber = 1
 	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
-	self.waveInProgress = false
+	self.isWaveInProgress = false
 end
 
 function WaveSpawner:OnHeartbeat(dt)
-	if self.waveInProgress then
+	if self.isWaveInProgress or self.isSpawningEnemies then
 		return
 	end
 
@@ -4737,13 +4811,15 @@ end
 
 
 function WaveSpawner:SpawnWave()
-	if self.waveInProgress then
+	if self.isWaveInProgress then
 		warn("WaveSpawner:SpawnWave is being called multiple times")
 		return
 	end
 	
 	print("Starting Wave:", self.waveNumber)
-	self.waveInProgress = true
+	self.enemiesInWave[self.waveNumber] = 0
+	self.isWaveInProgress = true
+	self.isSpawningEnemies = true
 	
 	local wave = Waves[self.waveNumber]
 	for _, enemy in ipairs(wave) do
@@ -4751,12 +4827,17 @@ function WaveSpawner:SpawnWave()
 		local amountToSpawn = enemy[2]
 		
 		for i = 1, amountToSpawn do
-			self:SpawnEnemy(enemyToSpawn)
+			local e = self:SpawnEnemy(enemyToSpawn)
 			wait(WaveSpawner.Settings.EnemySpawnDelay)
 		end
 	end
 	
-	self.waveInProgress = false
+	self.isSpawningEnemies = false
+	if WaveSpawner.Settings.WaveMustFinishBeforeNext then
+		self.WaveFinished:Wait()
+	end
+	
+	self.isWaveInProgress = false
 	self.waveNumber = self.waveNumber + 1
 	if not Waves[self.waveNumber] then
 		self:Stop()
@@ -4764,11 +4845,30 @@ function WaveSpawner:SpawnWave()
 end
 
 
-function WaveSpawner:SpawnEnemy(enemyType)
+function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
 	print("spawning enemy:", enemyType)
-	local thread = Instance.new("BindableEvent")
-	thread.Event:Connect(function() EnemyFactory.SpawnEnemy(enemyType) end)
-	thread:Fire()
+	-- local enemy: BaseEnemy = EnemyFactory.SpawnEnemy(enemyType)
+	local enemy = EnemyController.SpawnEnemy(enemyType)
+	
+	local waveNumber = self.waveNumber
+	self.enemiesInWave[waveNumber] += 1
+	
+	local died_connection
+	local path_complete_connection
+	local function removeEnemyFromWave()
+		died_connection:Disconnect()
+		path_complete_connection:Disconnect()
+		self.enemiesInWave[waveNumber] -= 1
+		
+		if not self.isSpawningEnemies and self.enemiesInWave[waveNumber] == 0 then
+			self._events.waveFinished:Fire(waveNumber)
+		end
+	end
+	
+	died_connection = enemy.Died:Connect(removeEnemyFromWave)
+	path_complete_connection = enemy.FollowPathFinished:Connect(removeEnemyFromWave)
+
+	return enemy
 end
 
 
@@ -5112,6 +5212,136 @@ end]]></ProtectedString>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
+			<Item class="Folder" referent="RBX3A320372F2E3406885CBBB0D0910E91E">
+				<Properties>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<string name="Name">Components</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="Script" referent="RBX178F561D0FC64974B344758FA0AC2D1B">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<bool name="Disabled">false</bool>
+						<Content name="LinkedSource"><null></null></Content>
+						<string name="Name">Test_HealthComponent</string>
+						<string name="ScriptGuid">{9D69990B-B12A-4B3F-8A24-5D2268E14511}</string>
+						<ProtectedString name="Source"><![CDATA[local Settings = require(game.ServerScriptService.Configs.ServerSettings)
+
+if not Settings.Testing.Components.Health then
+	return
+end
+
+local caseCount, successCount, failureCount = 0, 0, 0
+local failedMessages = {}
+function testCase(v1: any, v2: any, message: string)
+	caseCount += 1
+	local case = (v1 == v2)
+	if case then
+		successCount += 1
+	else
+		failureCount += 1
+		table.insert(failedMessages, message .. ", Expected: " .. tostring(v2) .. " Got: " .. tostring(v1))
+	end
+end
+
+function assertFinished()
+	print("Test Cases:", caseCount)
+	print("Successful cases:", successCount)
+	print("Failed Cases:", failureCount)
+	
+	for k, message in pairs(failedMessages) do
+		print("    Failed:", message)
+	end
+	print()
+		
+	caseCount, successCount, failureCount = 0, 0, 0
+	failedMessages = {}
+end
+
+print("Testing Health Component")
+
+local health: Health = require(game.ReplicatedStorage.Modules.Components.Health)
+
+local fullHealthValue = 100
+local halfHealthValue = fullHealthValue / 2
+
+-- Test initialising health object
+local fullHealth = health.new(fullHealthValue)
+local halfHealth = health.new(fullHealthValue, halfHealthValue)
+
+-- Test getter methods
+testCase(fullHealth:GetHealth() ~= nil, true, "get current health")
+testCase(fullHealth:GetMaxHealth() ~= nil, true, "get max health")
+
+-- Test initialised object
+testCase(fullHealth:GetMaxHealth(), fullHealthValue, "max health is set to first parameter")
+testCase(fullHealth:GetHealth(), fullHealthValue, "health is set to max health by default")
+testCase(halfHealth:GetMaxHealth(), fullHealthValue, "max health is set to first parameter")
+testCase(halfHealth:GetHealth(), halfHealthValue, "second parameter sets starting health value")
+
+-- Test setter methods
+fullHealth:SetHealth(75)
+testCase(fullHealth:GetHealth(), 75, "set health can change health")
+fullHealth:SetHealth(fullHealth:GetMaxHealth() + 20)
+testCase(fullHealth:GetHealth(), fullHealth:GetMaxHealth(), "health cannot be set above max health")
+fullHealth:SetHealth(-20)
+testCase(fullHealth:GetHealth(), 0, "health cannot be set below 0 health")
+
+-- Test damage
+local damage = 20
+local damageTaken
+fullHealth:SetHealth(fullHealthValue)
+fullHealth.Damaged:Connect(function(damageValue)
+	damageTaken = damageValue
+end)
+
+fullHealth:TakeDamage(damage)
+testCase(fullHealth:GetHealth(), fullHealthValue - damage, "damage is taken from health")
+testCase(damageTaken, damage, "return value from Damaged event is the damage applied")
+
+fullHealth:SetHealth(damage - 2)
+fullHealth:TakeDamage(damage)
+testCase(damageTaken, damage - 2, "damage past 0 health is ignored")
+
+--Test healing
+local startingHealth = fullHealthValue - 15
+local amountHealed
+fullHealth:SetHealth(startingHealth)
+fullHealth.Healed:Connect(function(healValue)
+	amountHealed = healValue
+end)
+
+fullHealth:Heal(10)
+testCase(fullHealth:GetHealth(), fullHealthValue - 5, "heal health")
+testCase(amountHealed, 10, "correct heal value returned for less than max health")
+fullHealth:Heal(10)
+testCase(fullHealth:GetHealth(), fullHealth:GetMaxHealth(), "can't heal above max health")
+testCase(amountHealed, 5, "health healed past max health is ignored")
+
+-- Test cleanup
+local reference
+do
+	local healthObject = health.new(100)
+	healthObject.Damaged:Connect(function(value)
+		print(healthObject)
+	end)
+	reference = setmetatable({
+		healthObject,
+		healthObject._events,
+		healthObject._events.damaged,
+	}, {
+		__mode = "v"
+	})
+	healthObject:Destroy()
+end
+wait(4)
+testCase(#reference, 0, "object is garbage collected when it is destroyed and out of scope")
+
+assertFinished()]]></ProtectedString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+			</Item>
 		</Item>
 		<Item class="Folder" referent="RBXFBBDD02C670F44E9AD8B28A7A332D6F9">
 			<Properties>
@@ -5128,6 +5358,9 @@ end]]></ProtectedString>
 					<ProtectedString name="Source"><![CDATA[local Settings = {
 	Testing = {
 		test_require_all_modules = false,
+		Components = {
+			Health = false,
+		},
 	},
 }
 
@@ -5135,6 +5368,26 @@ return Settings]]></ProtectedString>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
+		</Item>
+		<Item class="Folder" referent="RBXAD0515F713BE4B3891BA2491B6D5DC0A">
+			<Properties>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<string name="Name">Controllers</string>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="Script" referent="RBX953ADC45E6BD490286BD205EBBE33F42">
+			<Properties>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<bool name="Disabled">false</bool>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">InitPlayers</string>
+				<string name="ScriptGuid">{CD320DE4-B562-4388-8154-15DBF4B1BEDB}</string>
+				<ProtectedString name="Source"><![CDATA[game.Players.PlayerAdded:Connect(function(player)
+	game.StarterGui.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
+end)]]></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
 		</Item>
 	</Item>
 	<Item class="ServerStorage" referent="RBXC25D97EBE26B4F94B50E4833CB8603A7">
@@ -5388,11 +5641,13 @@ local EnemyFactory = {}
 function EnemyFactory.SpawnEnemy(enemyType)
 	local e = enemyType.new()
 	Enemy.Pool[e.model] = e
+	
 	local diedEvent
 	diedEvent = e.Died:Connect(function()
 		Enemy.RemoveEnemyFromPool(e)
 		diedEvent:Disconnect()
 	end)
+	
 	return e
 end
 
@@ -5416,12 +5671,13 @@ return module]]></ProtectedString>
 						<string name="Name">BaseEnemy</string>
 						<string name="ScriptGuid">{DF14C524-080D-485E-A334-CA55BF2D3983}</string>
 						<ProtectedString name="Source"><![CDATA[local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
-local ServerValue: ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
+local Health: Health = require(game.ReplicatedStorage.Modules.Components.Health)
 local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local TweenService = game:GetService("TweenService")
 
 local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
 
+-- TODO: rework enemy class to be more easily overridable
 ---@class BaseEnemy
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
@@ -5433,13 +5689,14 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 		_events = {
 			moveToCompleted = Instance.new("BindableEvent"),
 			died = Instance.new("BindableEvent"),
+			followPathFinished = Instance.new("BindableEvent"),
 		},
 	}, BaseEnemy)
 	
+	-- init values
 	self.name = stats.name
 	self.model = stats.model:Clone()
-	self.maxHealth = stats.health
-	self.health = ServerValue.new(stats.health)
+	self.health = Health.new(stats.health)
 	self.speed = stats.speed
 	self.path = nil
 	self.isAlive = true
@@ -5447,21 +5704,42 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	self.currentWaypoint = nil
 	self.nextWaypoint = nil
 	
-	self._connections.health = self.health.Changed:Connect(function(newValue)
-		if newValue <= 0 then
+	-- init events
+	self.MoveToCompleted = self._events.moveToCompleted.Event
+	self.Died = self._events.died.Event
+	self.FollowPathFinished = self._events.followPathFinished.Event
+	
+	local c = self.health.Changed:Connect(function(healthValue)
+		if self.isAlive and healthValue <= 0 then
 			self:OnDead()
 		end
 	end)
-	
-	self.MoveToCompleted = self._events.moveToCompleted.Event
-	self.Died = self._events.died.Event
+	self._connections.health_changed = c
 
 	return self
 end
 
+local function DestroyEvents(self)
+	for k, v in pairs(self._events) do
+		if v.Destroy then
+			v:Destroy()
+		end
+	end
+end
+
+local function DisconnectConnections(self)
+	for k, v in pairs(self._connections) do
+		if v.Disconnect then
+			v:Disconnect()
+		end
+	end
+end
+
 function BaseEnemy:Destroy()
 	self.model:Destroy()
-	self._connections.health:Disconnect()
+	self.health:Destroy()
+	DestroyEvents(self)
+	DisconnectConnections(self)
 end
 
 function BaseEnemy:ShowGui()
@@ -5470,12 +5748,12 @@ end
 function BaseEnemy:HideGui()
 end
 
-function BaseEnemy:TakeDamage(damageValue)
-	self.health:Set(self.health:Get() - damageValue)
+function BaseEnemy:TakeDamage(damage: number)
+	self.health:TakeDamage(damage)
 end
 
 function BaseEnemy:OnDead()
-	print("I am dead :(")
+	self.isAlive = false
 	self.model.Transparency = 0.75
 	self._events.died:Fire()
 end
@@ -5499,6 +5777,8 @@ function BaseEnemy:FollowPath()
 		tween.Completed:Wait()
 		self.currentWaypoint = self.nextWaypoint
 	end
+	
+	self._events.followPathFinished:Fire()
 	self:Destroy()
 	--[[
 	for _, v in ipairs(self.path) do
@@ -5517,16 +5797,6 @@ end
 
 
 return BaseEnemy]]></ProtectedString>
-						<BinaryString name="Tags"></BinaryString>
-					</Properties>
-				</Item>
-				<Item class="ModuleScript" referent="RBX14083B74D1964E458050FCA93145CB8E">
-					<Properties>
-						<BinaryString name="AttributesSerialize"></BinaryString>
-						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">BaseGroundEnemy</string>
-						<string name="ScriptGuid">{EEBA3C01-529C-4430-8894-AA9E6B2843DF}</string>
-						<ProtectedString name="Source"></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
@@ -5585,6 +5855,8 @@ local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 local StandardEnemy = {}
 StandardEnemy.__index = StandardEnemy
 setmetatable(StandardEnemy, BaseEnemy)
+
+StandardEnemy.ClassName = "Standard"
 
 ---@return StandardEnemy
 function StandardEnemy.new()	
@@ -5695,7 +5967,7 @@ function ServerValue.new(value, overrideClass)
 	local t = typeof(value)
 	local valueType = overrideClass or valueMap[t]
 	
-	assert(valueType ~= nil)
+	assert(valueType ~= nil, "type of passed value is not recognised")
 	
 	---@type ServerValue
 	local self = setmetatable({
@@ -5711,8 +5983,8 @@ function ServerValue.new(value, overrideClass)
 end
 
 function ServerValue:Set(value)
-	self._object.Value = value
 	self._value = value
+	self._object.Value = value
 end
 
 function ServerValue:Get()
@@ -5755,20 +6027,32 @@ return Class]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX49547E6E106648C78EAE868FAEBF8555">
+				<Item class="ModuleScript" referent="RBX9D27B7B9246F491899F9CD8998087D25">
 					<Properties>
 						<BinaryString name="AttributesSerialize"></BinaryString>
 						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">Debugging</string>
-						<string name="ScriptGuid">{C4EA87C1-F1C4-4DD3-B127-D69A3E2FA45A}</string>
-						<ProtectedString name="Source"><![CDATA[local Settings = require(game.ServerScriptService.Configs.ServerSettings)
-local Debugging = {}
+						<string name="Name">ConnectionManager</string>
+						<string name="ScriptGuid">{7A2D18FA-BE2B-4A10-AFCE-EBB119321F07}</string>
+						<ProtectedString name="Source"><![CDATA[---@class ConnectionManager
+local ConnectionManager = {}
+ConnectionManager.__index = ConnectionManager
 
-function Debugging.mprint(...)
-	if Settings.ModuleDebugging then
-		print(unpack({...}))
-	end
-end]]></ProtectedString>
+---@return ConnectionManager
+function ConnectionManager.new()
+	---@type ConnectionManager
+	local self = setmetatable({}, ConnectionManager)
+	
+	
+	
+	return self
+end
+
+function ConnectionManager:NewConnection()
+	
+end
+
+
+return ConnectionManager]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
@@ -5786,7 +6070,8 @@ end]]></ProtectedString>
 						<string name="Name">BaseTower</string>
 						<string name="ScriptGuid">{64E7DC5E-0281-462E-9815-1D02CBF1186B}</string>
 						<ProtectedString name="Source"><![CDATA[---@type Enemy
-local Enemy = require(game.ReplicatedStorage.Modules.Enemy).Enemy
+-- local Enemy = require(game.ReplicatedStorage.Modules.Enemy).Enemy
+local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.EnemyController)
 
 ---@class BaseTower
 local BaseTower = {}
@@ -5799,6 +6084,7 @@ function BaseTower.new(stats)
 	
 	self.range = stats.range
 	self.speed = stats.speed
+	self.damage = stats.damage
 	self.timeBetweenShots = 1 / self.speed
 	self.model = stats.model
 	self.name = stats.name
@@ -5816,12 +6102,12 @@ function BaseTower:ShootAt(target)
 	if not target then return end
 	self.cooldown = self.timeBetweenShots
 	self.model.CFrame = CFrame.new(self.model.Position, target.model.Position)
-	target:TakeDamage(100)
+	target:TakeDamage(self.damage)
 end
 
 function BaseTower:FindTarget()
 	for _, enemy in ipairs(workspace.Level.Enemies:GetChildren()) do
-		local enemyObject = Enemy.GetEnemyFromInstance(enemy)
+		local enemyObject = EnemyController.GetEnemyFromInstance(enemy)
 		if enemyObject and enemyObject.isAlive then
 			if (enemy.Position - self.model.Position).Magnitude <= self.range then
 				return enemyObject
@@ -5842,6 +6128,216 @@ return BaseTower]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
+			</Item>
+			<Item class="Folder" referent="RBXCEA4FDBA82784D2589504D60C5F38D29">
+				<Properties>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<string name="Name">Components</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="ModuleScript" referent="RBX09C96F98C262456C9F3E9E727168B95C">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<Content name="LinkedSource"><null></null></Content>
+						<string name="Name">Health</string>
+						<string name="ScriptGuid">{9A0BFB2E-327A-4A68-8383-B3813C386E06}</string>
+						<ProtectedString name="Source"><![CDATA[local ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
+type Health = {}
+
+--[[
+	Events:
+		Damaged: Fires whenever current health is reduced
+			Params:
+				damage taken: number
+		Healed: Fires whenever current health is increased
+			Params:
+				amount healed: number
+		Changed: Fires whenever the current health or max health changes
+			Params:
+				current health: number
+				max health: number
+]]
+
+---@class Health
+local Health = {}
+Health.__index = Health
+
+function Health.new(maxHealth: number, startingHealth: number?): Health
+	local self: Health = {
+		_maxHealth = ServerValue.new(maxHealth),
+		_health = ServerValue.new(startingHealth or maxHealth),
+		_events = {
+			healed = Instance.new("BindableEvent"),
+			damaged = Instance.new("BindableEvent"),
+			changed = Instance.new("BindableEvent"),
+		},
+	}
+	
+	-- init Events
+	self.Healed = self._events.healed.Event
+	self.Damaged = self._events.damaged.Event
+	self.Changed = self._events.changed.Event
+	
+	local onHealthChanged = function()
+		self._events.changed:Fire(self._health:Get(), self._maxHealth:Get())
+	end
+	
+	self._connections = {
+		maxHealth = self._maxHealth.Changed:Connect(onHealthChanged),
+		health = self._health.Changed:Connect(onHealthChanged),
+	}
+
+	return setmetatable(self, Health)
+end
+
+function Health:TakeDamage(damage)
+	local currentHealth = self:GetHealth()
+	local damageToTake = damage >= currentHealth and currentHealth or damage
+	self:SetHealth(currentHealth - damageToTake)
+	self._events.damaged:Fire(damageToTake)
+end
+
+function Health:Heal(healAmount)
+	local currentHealth = self:GetHealth()
+	local missingHealth = self:GetMaxHealth() - currentHealth
+	local amountToHeal = healAmount <= missingHealth and healAmount or missingHealth
+	self:SetHealth(currentHealth + amountToHeal)
+	self._events.healed:Fire(amountToHeal)
+end
+
+function Health:GetMaxHealth()
+	return self._maxHealth:Get()
+end
+
+function Health:SetMaxHealth(newMaxHealthValue)
+	self._maxHealth:Set(newMaxHealthValue)
+end
+
+function Health:GetHealth()
+	return self._health:Get()
+end
+
+function Health:SetHealth(newHealthValue)
+	local healthToSet = math.clamp(newHealthValue, 0, self._maxHealth:Get())
+	self._health:Set(healthToSet)
+end
+
+-- Prepares Health for garbage collection once all references to it fall out of scope or are nil
+function Health:Destroy()
+	for k, v in pairs(self._connections) do
+		if v.Disconnect then
+			v:Disconnect()
+		end
+	end
+	for k, v in pairs(self._events) do
+		if v.Destroy then
+			v:Destroy()
+		end
+	end
+end
+
+return Health]]></ProtectedString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+			</Item>
+			<Item class="ModuleScript" referent="RBX96C28683A5774CF08D1BAF6E6E993D81">
+				<Properties>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<Content name="LinkedSource"><null></null></Content>
+					<string name="Name">EnemyController</string>
+					<string name="ScriptGuid">{4BD949BF-D276-41FE-937E-F686E4106A7B}</string>
+					<ProtectedString name="Source"><![CDATA[-- local ConnectionManager = require(game.ReplicatedStorage.Modules.Utility.ConnectionManager)
+
+---@class EnemyController
+local EnemyController = {}
+EnemyController.__index = EnemyController
+
+local EnemyPool = {
+	_count = 0,
+	_pool = {},
+	_events = {
+		enemy_added = Instance.new("BindableEvent"),
+		enemy_removed = Instance.new("BindableEvent"),
+	},
+	-- Remove = function(self, enemy)
+	-- 	local index -- = (EnemyPool[enemy] and enemy or (EnemyPool[enemy.model] and enemy.model or nil))
+	-- 	if self._pool[enemy] then
+	-- 		index = enemy
+	-- 	elseif self._pool[enemy.model] then
+	-- 		index = enemy.model
+	-- 	end
+	-- 	if index then
+	-- 		self._pool[index] = nil
+	-- 	end
+	-- 	self._events.enemy_removed:Fire()
+	-- end,
+}
+function EnemyPool.Add(enemy)
+	assert(enemy, "EnemyPool.Add was called with a nil value")
+	assert(enemy.model, "Passed enemy has no model property" .. (", " .. tostring(enemy.ClassName) or ""))
+	EnemyPool._pool[enemy.model] = enemy
+	EnemyPool._count += 1
+	EnemyPool._events.enemy_added:Fire(EnemyPool._count)
+end
+
+function EnemyPool.Remove(enemy)
+	local index -- = (EnemyPool[enemy] and enemy or (EnemyPool[enemy.model] and enemy.model or nil))
+	if EnemyPool._pool[enemy] then
+		index = enemy
+	elseif EnemyPool._pool[enemy.model] then
+		index = enemy.model
+	end
+	if index then
+		EnemyPool._pool[index] = nil
+		EnemyPool._count -= 1
+	end
+	EnemyPool._events.enemy_removed:Fire(EnemyPool._count)
+end
+
+
+-- local typeMap = {
+-- 	StandardEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyStandard),
+-- 	FastEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast),
+-- 	SlowEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast),
+-- }
+
+---@return EnemyController
+function EnemyController.new()
+	---@type EnemyController
+	local self = setmetatable({
+		-- _connections = ConnectionManager.new()
+		_events = {},
+	}, EnemyController)
+	
+	self.EnemyAdded = EnemyPool._events.enemy_added.Event
+	self.EnemyRemoved = EnemyPool._events.enemy_removed.Event
+	
+	return self
+end
+
+function EnemyController.SpawnEnemy(enemyType)
+	local enemy = enemyType.new()
+	EnemyPool.Add(enemy)
+	
+	local died_connection
+	died_connection = enemy.Died:Connect(function()
+		died_connection:Disconnect()
+		EnemyPool:Remove(enemy)
+	end)
+	
+	return enemy
+end
+
+function EnemyController.GetEnemyFromInstance(instance)
+	return EnemyPool._pool[instance]
+end
+
+EnemyController.EnemyPool = EnemyPool
+
+return EnemyController.new()]]></ProtectedString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
 			</Item>
 		</Item>
 		<Item class="Folder" referent="RBXDE84B8721DB646C6845BB2EBC8500443">
@@ -13993,12 +14489,6 @@ local stats: {[string]: EnemyStats} = {
 		name = "Slow",
 		model = ReplicatedStorage.Enemies.Standard
 	},
-	Test = {
-		health = "hello",
-		speed = true,
-		name = 24,
-		model = {}
-	}
 }
 
 return stats]]></ProtectedString>
@@ -14015,6 +14505,7 @@ return stats]]></ProtectedString>
 	Standard = {
 		range = 10,
 		speed = 1,
+		damage = 50,
 		name = "Standard",
 		model = workspace.Tower,
 	},
