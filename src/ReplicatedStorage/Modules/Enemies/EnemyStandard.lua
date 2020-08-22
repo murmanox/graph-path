@@ -4,11 +4,11 @@ local PathingService = require(game.ServerScriptService.Modules.Services.Pathing
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 
 ---@class StandardEnemy
-local StandardEnemy = {}
+local StandardEnemy = {
+	ClassName = "Standard",
+}
 StandardEnemy.__index = StandardEnemy
 setmetatable(StandardEnemy, BaseEnemy)
-
-StandardEnemy.ClassName = "Standard"
 
 ---@return StandardEnemy
 function StandardEnemy.new()	

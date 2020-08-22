@@ -9,6 +9,9 @@ local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
 ---@class BaseEnemy
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
+BaseEnemy.__tostring = function(t)
+	return t.ClassName or "Unnamed enemy"
+end
 
 ---@return BaseEnemy
 function BaseEnemy.new(stats: EnemyStats): BaseEnemy

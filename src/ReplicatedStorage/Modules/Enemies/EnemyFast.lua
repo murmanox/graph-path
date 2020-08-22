@@ -5,7 +5,9 @@ local PathingService = require(game.ServerScriptService.Modules.Services.Pathing
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 
 ---@class FastEnemy
-local FastEnemy = {}
+local FastEnemy = {
+	ClassName = "Fast",
+}
 FastEnemy.__index = FastEnemy
 setmetatable(FastEnemy, BaseEnemy)
 

@@ -4578,12 +4578,11 @@ game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)]]></ProtectedStr
 						<Content name="LinkedSource"><null></null></Content>
 						<string name="Name">Script</string>
 						<string name="ScriptGuid">{54E851EB-9E9B-46FE-9DFA-4BDB77DD63A3}</string>
-						<ProtectedString name="Source"><![CDATA[local EnemyController = require(game.ReplicatedStorage.Modules.EnemyController)
+						<ProtectedString name="Source"><![CDATA[local EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
 
 script.Parent.Text = #EnemyController.EnemyPool._pool
 
 local function updateLabel(newValue)
-	print(newValue)
 	script.Parent.Text = tostring(newValue)
 end
 
@@ -4730,10 +4729,8 @@ EnemyController.EnemyRemoved:Connect(updateLabel)]]></ProtectedString>
 					<Content name="LinkedSource"><null></null></Content>
 					<string name="Name">WaveSpawner</string>
 					<string name="ScriptGuid">{BFA7D618-6DA1-46CD-A466-BCF9713B57A9}</string>
-					<ProtectedString name="Source"><![CDATA[local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.EnemyController)
-local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
----@type Enemy
-local Enemy = EnemyModule.Enemy
+					<ProtectedString name="Source"><![CDATA[local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
+local Enemy = require(game.ReplicatedStorage.Modules.Enemy)
 ---@type EnemyFactory
 --local EnemyFactory = EnemyModule.EnemyFactory
 
@@ -5148,6 +5145,10 @@ function initMap()
 	wave_spawner:Start()
 end
 
+game.Players.PlayerAdded:Connect(function(player)
+	game.StarterGui.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
+end)
+
 wait(2)
 initMap()]]></ProtectedString>
 				<BinaryString name="Tags"></BinaryString>
@@ -5376,19 +5377,6 @@ return Settings]]></ProtectedString>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Script" referent="RBX953ADC45E6BD490286BD205EBBE33F42">
-			<Properties>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<bool name="Disabled">false</bool>
-				<Content name="LinkedSource"><null></null></Content>
-				<string name="Name">InitPlayers</string>
-				<string name="ScriptGuid">{CD320DE4-B562-4388-8154-15DBF4B1BEDB}</string>
-				<ProtectedString name="Source"><![CDATA[game.Players.PlayerAdded:Connect(function(player)
-	game.StarterGui.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
-end)]]></ProtectedString>
-				<BinaryString name="Tags"></BinaryString>
-			</Properties>
-		</Item>
 	</Item>
 	<Item class="ServerStorage" referent="RBXC25D97EBE26B4F94B50E4833CB8603A7">
 		<Properties>
@@ -5593,31 +5581,15 @@ local StandardEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyStanda
 local FastEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast)
 local SlowEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast)
 
-local module = {}
-
-
-local function newEnemyType(name, class)
-	local t = setmetatable({
-		name = name, class = class
-	},
-	{
-		__tostring = function(t) return t.name end,
-		__index = function(t, k) return t.class[k] end
-	})
-	
-	return t
-end
-
 
 ---@class Enemy
 local Enemy = {}
 Enemy.__index = Enemy
-Enemy.Pool = {}
 
 Enemy.Type, Enemy._TypeMetatable = {
-	Standard = newEnemyType("Standard", StandardEnemy),
-	Fast = newEnemyType("Fast", FastEnemy),
-	Slow = newEnemyType("Slow", SlowEnemy),
+	Standard = StandardEnemy,
+	Fast = FastEnemy,
+	Slow = SlowEnemy,
 }, {
 	__index = function(t, k)
 		error(k .. " is not a valid enemy type")
@@ -5625,36 +5597,11 @@ Enemy.Type, Enemy._TypeMetatable = {
 }
 setmetatable(Enemy.Type, Enemy._TypeMetatable)
 
-
-function Enemy.GetEnemyFromInstance(instance)
-	return Enemy.Pool[instance]
+function Enemy.new()
+	-- base class for all enemies ??
 end
 
-function Enemy.RemoveEnemyFromPool(enemy)
-	Enemy.Pool[enemy.model] = nil
-end
-
----@class EnemyFactory
-local EnemyFactory = {}
-
----@return EnemyFactory
-function EnemyFactory.SpawnEnemy(enemyType)
-	local e = enemyType.new()
-	Enemy.Pool[e.model] = e
-	
-	local diedEvent
-	diedEvent = e.Died:Connect(function()
-		Enemy.RemoveEnemyFromPool(e)
-		diedEvent:Disconnect()
-	end)
-	
-	return e
-end
-
-module.Enemy = Enemy
-module.EnemyFactory = EnemyFactory
-
-return module]]></ProtectedString>
+return Enemy]]></ProtectedString>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
@@ -5923,6 +5870,36 @@ return SlowEnemy]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
+				<Item class="ModuleScript" referent="RBX3F59F257F4514195A8489F90D13841C3">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<Content name="LinkedSource"><null></null></Content>
+						<string name="Name">CompositionStandardEnemy</string>
+						<string name="ScriptGuid">{30BAC16B-2E2F-46CA-A7BE-D9F653802D87}</string>
+						<ProtectedString name="Source"><![CDATA[local Health: Health = require(game.ReplicatedStorage.Modules.Components.Health)
+local EnemyController:EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
+
+---@class TestEnemyStandard
+local TestEnemyStandard = {}
+TestEnemyStandard.__index = TestEnemyStandard
+
+---@return TestEnemyStandard
+function TestEnemyStandard.new()
+	---@type TestEnemyStandard
+	local self = setmetatable({
+		health = Health.new(100),
+	}, TestEnemyStandard)
+	
+	
+	
+	return self
+end
+
+
+return TestEnemyStandard]]></ProtectedString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
 			</Item>
 			<Item class="Folder" referent="RBX41883B86B5EA42FCA041E56F5F98907F">
 				<Properties>
@@ -6071,7 +6048,7 @@ return ConnectionManager]]></ProtectedString>
 						<string name="ScriptGuid">{64E7DC5E-0281-462E-9815-1D02CBF1186B}</string>
 						<ProtectedString name="Source"><![CDATA[---@type Enemy
 -- local Enemy = require(game.ReplicatedStorage.Modules.Enemy).Enemy
-local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.EnemyController)
+local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
 
 ---@class BaseTower
 local BaseTower = {}
@@ -6241,13 +6218,19 @@ return Health]]></ProtectedString>
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="ModuleScript" referent="RBX96C28683A5774CF08D1BAF6E6E993D81">
+			<Item class="Folder" referent="RBX07165BEB07084F428D3B0AC54610109B">
 				<Properties>
 					<BinaryString name="AttributesSerialize"></BinaryString>
-					<Content name="LinkedSource"><null></null></Content>
-					<string name="Name">EnemyController</string>
-					<string name="ScriptGuid">{4BD949BF-D276-41FE-937E-F686E4106A7B}</string>
-					<ProtectedString name="Source"><![CDATA[-- local ConnectionManager = require(game.ReplicatedStorage.Modules.Utility.ConnectionManager)
+					<string name="Name">Controllers</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="ModuleScript" referent="RBXB57D723B532A4031B044BCF8059C815C">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<Content name="LinkedSource"><null></null></Content>
+						<string name="Name">EnemyController</string>
+						<string name="ScriptGuid">{9B995603-A35B-40A5-930D-BB4EAF5E28A5}</string>
+						<ProtectedString name="Source"><![CDATA[-- local ConnectionManager = require(game.ReplicatedStorage.Modules.Utility.ConnectionManager)
 
 ---@class EnemyController
 local EnemyController = {}
@@ -6260,19 +6243,8 @@ local EnemyPool = {
 		enemy_added = Instance.new("BindableEvent"),
 		enemy_removed = Instance.new("BindableEvent"),
 	},
-	-- Remove = function(self, enemy)
-	-- 	local index -- = (EnemyPool[enemy] and enemy or (EnemyPool[enemy.model] and enemy.model or nil))
-	-- 	if self._pool[enemy] then
-	-- 		index = enemy
-	-- 	elseif self._pool[enemy.model] then
-	-- 		index = enemy.model
-	-- 	end
-	-- 	if index then
-	-- 		self._pool[index] = nil
-	-- 	end
-	-- 	self._events.enemy_removed:Fire()
-	-- end,
 }
+
 function EnemyPool.Add(enemy)
 	assert(enemy, "EnemyPool.Add was called with a nil value")
 	assert(enemy.model, "Passed enemy has no model property" .. (", " .. tostring(enemy.ClassName) or ""))
@@ -6296,12 +6268,6 @@ function EnemyPool.Remove(enemy)
 end
 
 
--- local typeMap = {
--- 	StandardEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyStandard),
--- 	FastEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast),
--- 	SlowEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast),
--- }
-
 ---@return EnemyController
 function EnemyController.new()
 	---@type EnemyController
@@ -6323,7 +6289,7 @@ function EnemyController.SpawnEnemy(enemyType)
 	local died_connection
 	died_connection = enemy.Died:Connect(function()
 		died_connection:Disconnect()
-		EnemyPool:Remove(enemy)
+		EnemyPool.Remove(enemy)
 	end)
 	
 	return enemy
@@ -6336,8 +6302,9 @@ end
 EnemyController.EnemyPool = EnemyPool
 
 return EnemyController.new()]]></ProtectedString>
-					<BinaryString name="Tags"></BinaryString>
-				</Properties>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
 			</Item>
 		</Item>
 		<Item class="Folder" referent="RBXDE84B8721DB646C6845BB2EBC8500443">
@@ -14411,9 +14378,7 @@ return EnemyController.new()]]></ProtectedString>
 					<Content name="LinkedSource"><null></null></Content>
 					<string name="Name">Waves</string>
 					<string name="ScriptGuid">{91211792-3185-4726-B3ED-DDE50F5CEACC}</string>
-					<ProtectedString name="Source"><![CDATA[local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
----@type Enemy
-local Enemy = EnemyModule.Enemy
+					<ProtectedString name="Source"><![CDATA[local Enemy: Enemy = require(game.ReplicatedStorage.Modules.Enemy)
 
 
 local Wave = {}
