@@ -19,15 +19,29 @@ WaveSpawner.Settings = {
 	WaveSpawnDelay = 1,
 }
 
+local enemyWaveMap = {
+	Remove = function(self, e)
+		self[e] = nil
+	end,
+}
+
 ---@return WaveSpawner
 function WaveSpawner.new(paths)
 	---@type WaveSpawner
-	local self = setmetatable({}, WaveSpawner)
+	local self = setmetatable({
+		_events = {
+			waveFinished = Instance.new("BindableEvent")
+		}
+	}, WaveSpawner)
 	
 	self.paths = paths
 	self.waveNumber = 1
 	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
-	self.waveInProgress = false
+	self.isWaveInProgress = false
+	self.isSpawningEnemies = false
+	self.enemiesInWave = {}
+	
+	self.WaveFinished = self._events.waveFinished.Event
 	
 	return self
 end
@@ -45,11 +59,11 @@ end
 function WaveSpawner:Reset()
 	self.waveNumber = 1
 	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
-	self.waveInProgress = false
+	self.isWaveInProgress = false
 end
 
 function WaveSpawner:OnHeartbeat(dt)
-	if self.waveInProgress then
+	if self.isWaveInProgress or self.isSpawningEnemies then
 		return
 	end
 
@@ -64,13 +78,15 @@ end
 
 
 function WaveSpawner:SpawnWave()
-	if self.waveInProgress then
+	if self.isWaveInProgress then
 		warn("WaveSpawner:SpawnWave is being called multiple times")
 		return
 	end
 	
 	print("Starting Wave:", self.waveNumber)
-	self.waveInProgress = true
+	self.enemiesInWave[self.waveNumber] = 0
+	self.isWaveInProgress = true
+	self.isSpawningEnemies = true
 	
 	local wave = Waves[self.waveNumber]
 	for _, enemy in ipairs(wave) do
@@ -78,12 +94,31 @@ function WaveSpawner:SpawnWave()
 		local amountToSpawn = enemy[2]
 		
 		for i = 1, amountToSpawn do
-			self:SpawnEnemy(enemyToSpawn)
+			local e = self:SpawnEnemy(enemyToSpawn)
+			
+			-- Check if that was the last enemy in the wave and then fire WaveFinished event
+			-- local died_connection
+			-- died_connection = e.Died:Connect(function()
+			-- 	died_connection:Disconnect()
+			-- 	local enemyWaveNumber = enemyWaveMap[e]
+			-- 	enemyWaveMap:Remove(e)
+			-- 	local waveTable = self.enemiesInWave[enemyWaveNumber]
+			-- 	table.remove(waveTable, table.find(waveTable, e))
+
+			-- 	if not self.isSpawningEnemies and #waveTable == 0 then
+			-- 		self._events.waveFinished:Fire(enemyWaveNumber)
+			-- 	end
+			-- end)
 			wait(WaveSpawner.Settings.EnemySpawnDelay)
 		end
 	end
 	
-	self.waveInProgress = false
+	self.isSpawningEnemies = false
+	if WaveSpawner.Settings.WaveMustFinishBeforeNext then
+		self.WaveFinished:Wait()
+	end
+	
+	self.isWaveInProgress = false
 	self.waveNumber = self.waveNumber + 1
 	if not Waves[self.waveNumber] then
 		self:Stop()
@@ -91,11 +126,29 @@ function WaveSpawner:SpawnWave()
 end
 
 
-function WaveSpawner:SpawnEnemy(enemyType)
+function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
 	print("spawning enemy:", enemyType)
-	local thread = Instance.new("BindableEvent")
-	thread.Event:Connect(function() EnemyFactory.SpawnEnemy(enemyType) end)
-	thread:Fire()
+	local enemy: BaseEnemy = EnemyFactory.SpawnEnemy(enemyType)
+	
+	local waveNumber = self.waveNumber
+	self.enemiesInWave[waveNumber] += 1
+	
+	local died_connection
+	local path_complete_connection
+	local function removeEnemyFromWave()
+		died_connection:Disconnect()
+		path_complete_connection:Disconnect()
+		self.enemiesInWave[waveNumber] -= 1
+		
+		if not self.isSpawningEnemies and self.enemiesInWave[waveNumber] == 0 then
+			self._events.waveFinished:Fire(waveNumber)
+		end
+	end
+	
+	died_connection = enemy.Died:Connect(removeEnemyFromWave)
+	path_complete_connection = enemy.FollowPathFinished:Connect(removeEnemyFromWave)
+
+	return enemy
 end
 
 
