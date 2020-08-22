@@ -61,5 +61,9 @@ function initMap()
 	wave_spawner:Start()
 end
 
+game.Players.PlayerAdded:Connect(function(player)
+	game.StarterGui.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
+end)
+
 wait(2)
 initMap()
