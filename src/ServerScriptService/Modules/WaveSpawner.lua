@@ -95,20 +95,6 @@ function WaveSpawner:SpawnWave()
 		
 		for i = 1, amountToSpawn do
 			local e = self:SpawnEnemy(enemyToSpawn)
-			
-			-- Check if that was the last enemy in the wave and then fire WaveFinished event
-			-- local died_connection
-			-- died_connection = e.Died:Connect(function()
-			-- 	died_connection:Disconnect()
-			-- 	local enemyWaveNumber = enemyWaveMap[e]
-			-- 	enemyWaveMap:Remove(e)
-			-- 	local waveTable = self.enemiesInWave[enemyWaveNumber]
-			-- 	table.remove(waveTable, table.find(waveTable, e))
-
-			-- 	if not self.isSpawningEnemies and #waveTable == 0 then
-			-- 		self._events.waveFinished:Fire(enemyWaveNumber)
-			-- 	end
-			-- end)
 			wait(WaveSpawner.Settings.EnemySpawnDelay)
 		end
 	end
