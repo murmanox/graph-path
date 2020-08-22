@@ -5,6 +5,7 @@ local TweenService = game:GetService("TweenService")
 
 local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
 
+-- TODO: rework enemy class to be more easily overridable
 ---@class BaseEnemy
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
@@ -16,6 +17,7 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 		_events = {
 			moveToCompleted = Instance.new("BindableEvent"),
 			died = Instance.new("BindableEvent"),
+			followPathFinished = Instance.new("BindableEvent"),
 		},
 	}, BaseEnemy)
 	
@@ -33,19 +35,39 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	-- init events
 	self.MoveToCompleted = self._events.moveToCompleted.Event
 	self.Died = self._events.died.Event
+	self.FollowPathFinished = self._events.followPathFinished.Event
 	
-	-- memory leak here, make object to handle connections
-	self.health.Changed:Connect(function(healthValue)
+	local c = self.health.Changed:Connect(function(healthValue)
 		if self.isAlive and healthValue <= 0 then
 			self:OnDead()
 		end
 	end)
+	self._connections.health_changed = c
 
 	return self
 end
 
+local function DestroyEvents(self)
+	for k, v in pairs(self._events) do
+		if v.Destroy then
+			v:Destroy()
+		end
+	end
+end
+
+local function DisconnectConnections(self)
+	for k, v in pairs(self._connections) do
+		if v.Disconnect then
+			v:Disconnect()
+		end
+	end
+end
+
 function BaseEnemy:Destroy()
 	self.model:Destroy()
+	self.health:Destroy()
+	DestroyEvents(self)
+	DisconnectConnections(self)
 end
 
 function BaseEnemy:ShowGui()
@@ -59,7 +81,7 @@ function BaseEnemy:TakeDamage(damage: number)
 end
 
 function BaseEnemy:OnDead()
-	print("I am dead :(")
+	self.isAlive = false
 	self.model.Transparency = 0.75
 	self._events.died:Fire()
 end
@@ -83,6 +105,8 @@ function BaseEnemy:FollowPath()
 		tween.Completed:Wait()
 		self.currentWaypoint = self.nextWaypoint
 	end
+	
+	self._events.followPathFinished:Fire()
 	self:Destroy()
 	--[[
 	for _, v in ipairs(self.path) do
