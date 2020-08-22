@@ -1,8 +1,7 @@
-local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
----@type Enemy
-local Enemy = EnemyModule.Enemy
+local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
+local Enemy = require(game.ReplicatedStorage.Modules.Enemy)
 ---@type EnemyFactory
-local EnemyFactory = EnemyModule.EnemyFactory
+--local EnemyFactory = EnemyModule.EnemyFactory
 
 local Waves = require(game.ReplicatedStorage.Configs.Waves)
 
@@ -114,7 +113,8 @@ end
 
 function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
 	print("spawning enemy:", enemyType)
-	local enemy: BaseEnemy = EnemyFactory.SpawnEnemy(enemyType)
+	-- local enemy: BaseEnemy = EnemyFactory.SpawnEnemy(enemyType)
+	local enemy = EnemyController.SpawnEnemy(enemyType)
 	
 	local waveNumber = self.waveNumber
 	self.enemiesInWave[waveNumber] += 1

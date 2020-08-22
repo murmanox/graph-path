@@ -1,5 +1,6 @@
 ---@type Enemy
-local Enemy = require(game.ReplicatedStorage.Modules.Enemy).Enemy
+-- local Enemy = require(game.ReplicatedStorage.Modules.Enemy).Enemy
+local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
 
 ---@class BaseTower
 local BaseTower = {}
@@ -35,7 +36,7 @@ end
 
 function BaseTower:FindTarget()
 	for _, enemy in ipairs(workspace.Level.Enemies:GetChildren()) do
-		local enemyObject = Enemy.GetEnemyFromInstance(enemy)
+		local enemyObject = EnemyController.GetEnemyFromInstance(enemy)
 		if enemyObject and enemyObject.isAlive then
 			if (enemy.Position - self.model.Position).Magnitude <= self.range then
 				return enemyObject

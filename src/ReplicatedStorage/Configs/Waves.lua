@@ -1,6 +1,4 @@
-local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
----@type Enemy
-local Enemy = EnemyModule.Enemy
+local Enemy: Enemy = require(game.ReplicatedStorage.Modules.Enemy)
 
 
 local Wave = {}
