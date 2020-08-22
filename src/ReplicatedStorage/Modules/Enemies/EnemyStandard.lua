@@ -8,6 +8,8 @@ local StandardEnemy = {}
 StandardEnemy.__index = StandardEnemy
 setmetatable(StandardEnemy, BaseEnemy)
 
+StandardEnemy.ClassName = "Standard"
+
 ---@return StandardEnemy
 function StandardEnemy.new()	
 	---@type StandardEnemy
