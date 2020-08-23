@@ -4583,7 +4583,7 @@ game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)]]></ProtectedStr
 script.Parent.Text = #EnemyController.EnemyPool._pool
 
 local function updateLabel(newValue)
-	script.Parent.Text = tostring(newValue)
+	script.Parent.Text = EnemyController.Pool:GetCount()
 end
 
 EnemyController.EnemyAdded:Connect(updateLabel)
@@ -4841,13 +4841,13 @@ function WaveSpawner:SpawnWave()
 	end
 end
 
-
+-- TODO: enemy deaths and removals should be handled by enemycontroller and communicated
+-- 		 to wavespawner... right?
 function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
 	print("spawning enemy:", enemyType)
-	-- local enemy: BaseEnemy = EnemyFactory.SpawnEnemy(enemyType)
-	local enemy = EnemyController.SpawnEnemy(enemyType)
-	
 	local waveNumber = self.waveNumber
+
+	local enemy = EnemyController.SpawnEnemy(enemyType, waveNumber)
 	self.enemiesInWave[waveNumber] += 1
 	
 	local died_connection
@@ -5628,6 +5628,9 @@ local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
 ---@class BaseEnemy
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
+BaseEnemy.__tostring = function(t)
+	return t.ClassName or "Unnamed enemy"
+end
 
 ---@return BaseEnemy
 function BaseEnemy.new(stats: EnemyStats): BaseEnemy
@@ -5760,7 +5763,9 @@ local PathingService = require(game.ServerScriptService.Modules.Services.Pathing
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 
 ---@class FastEnemy
-local FastEnemy = {}
+local FastEnemy = {
+	ClassName = "Fast",
+}
 FastEnemy.__index = FastEnemy
 setmetatable(FastEnemy, BaseEnemy)
 
@@ -5799,11 +5804,11 @@ local PathingService = require(game.ServerScriptService.Modules.Services.Pathing
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 
 ---@class StandardEnemy
-local StandardEnemy = {}
+local StandardEnemy = {
+	ClassName = "Standard",
+}
 StandardEnemy.__index = StandardEnemy
 setmetatable(StandardEnemy, BaseEnemy)
-
-StandardEnemy.ClassName = "Standard"
 
 ---@return StandardEnemy
 function StandardEnemy.new()	
@@ -5843,7 +5848,9 @@ local PathingService = require(game.ServerScriptService.Modules.Services.Pathing
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 
 ---@class SlowEnemy
-local SlowEnemy = {}
+local SlowEnemy = {
+	ClassName = "Slow",
+}
 SlowEnemy.__index = SlowEnemy
 setmetatable(SlowEnemy, BaseEnemy)
 
@@ -6243,6 +6250,9 @@ local EnemyPool = {
 		enemy_added = Instance.new("BindableEvent"),
 		enemy_removed = Instance.new("BindableEvent"),
 	},
+	GetCount = function(self)
+		return self._count
+	end,
 }
 
 function EnemyPool.Add(enemy)
@@ -6250,21 +6260,22 @@ function EnemyPool.Add(enemy)
 	assert(enemy.model, "Passed enemy has no model property" .. (", " .. tostring(enemy.ClassName) or ""))
 	EnemyPool._pool[enemy.model] = enemy
 	EnemyPool._count += 1
-	EnemyPool._events.enemy_added:Fire(EnemyPool._count)
+	EnemyPool._events.enemy_added:Fire(enemy)
 end
 
 function EnemyPool.Remove(enemy)
-	local index -- = (EnemyPool[enemy] and enemy or (EnemyPool[enemy.model] and enemy.model or nil))
+	local index
 	if EnemyPool._pool[enemy] then
 		index = enemy
 	elseif EnemyPool._pool[enemy.model] then
 		index = enemy.model
 	end
 	if index then
+		local removedEnemy = EnemyPool._pool[index]
 		EnemyPool._pool[index] = nil
 		EnemyPool._count -= 1
+		EnemyPool._events.enemy_removed:Fire(removedEnemy)
 	end
-	EnemyPool._events.enemy_removed:Fire(EnemyPool._count)
 end
 
 
@@ -6276,13 +6287,17 @@ function EnemyController.new()
 		_events = {},
 	}, EnemyController)
 	
+	self.enemiesInPool = function()
+		return EnemyPool._count
+	end
+	
 	self.EnemyAdded = EnemyPool._events.enemy_added.Event
 	self.EnemyRemoved = EnemyPool._events.enemy_removed.Event
 	
 	return self
 end
 
-function EnemyController.SpawnEnemy(enemyType)
+function EnemyController.SpawnEnemy(enemyType: Enemy, waveNumber: number)
 	local enemy = enemyType.new()
 	EnemyPool.Add(enemy)
 	
@@ -6295,11 +6310,12 @@ function EnemyController.SpawnEnemy(enemyType)
 	return enemy
 end
 
-function EnemyController.GetEnemyFromInstance(instance)
+function EnemyController.GetEnemyFromInstance(instance: Model | BasePart)
 	return EnemyPool._pool[instance]
 end
 
 EnemyController.EnemyPool = EnemyPool
+EnemyController.Pool = EnemyController.EnemyPool
 
 return EnemyController.new()]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
