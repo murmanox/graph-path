@@ -4772,6 +4772,16 @@ function WaveSpawner.new(paths)
 	self.enemiesInWave = {}
 	
 	self.WaveFinished = self._events.waveFinished.Event
+
+	EnemyController.EnemyRemoved:Connect(function(enemy)
+		local wave = enemy.wave
+		if wave then
+			self.enemiesInWave[wave] -= 1
+			if not self.isSpawningEnemies and self.enemiesInWave[wave] == 0 then
+				self._events.waveFinished:Fire(wave)
+			end
+		end
+	end)
 	
 	return self
 end
@@ -4841,30 +4851,11 @@ function WaveSpawner:SpawnWave()
 	end
 end
 
--- TODO: enemy deaths and removals should be handled by enemycontroller and communicated
--- 		 to wavespawner... right?
 function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
-	print("spawning enemy:", enemyType)
+	-- print("spawning enemy:", enemyType)
 	local waveNumber = self.waveNumber
-
 	local enemy = EnemyController.SpawnEnemy(enemyType, waveNumber)
 	self.enemiesInWave[waveNumber] += 1
-	
-	local died_connection
-	local path_complete_connection
-	local function removeEnemyFromWave()
-		died_connection:Disconnect()
-		path_complete_connection:Disconnect()
-		self.enemiesInWave[waveNumber] -= 1
-		
-		if not self.isSpawningEnemies and self.enemiesInWave[waveNumber] == 0 then
-			self._events.waveFinished:Fire(waveNumber)
-		end
-	end
-	
-	died_connection = enemy.Died:Connect(removeEnemyFromWave)
-	path_complete_connection = enemy.FollowPathFinished:Connect(removeEnemyFromWave)
-
 	return enemy
 end
 
@@ -5599,6 +5590,9 @@ setmetatable(Enemy.Type, Enemy._TypeMetatable)
 
 function Enemy.new()
 	-- base class for all enemies ??
+	local self = setmetatable({}, Enemy)
+	
+	return self
 end
 
 return Enemy]]></ProtectedString>
@@ -5646,6 +5640,7 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	-- init values
 	self.name = stats.name
 	self.model = stats.model:Clone()
+	self.wave = stats.wave or 1
 	self.health = Health.new(stats.health)
 	self.speed = stats.speed
 	self.path = nil
@@ -5799,9 +5794,9 @@ return FastEnemy]]></ProtectedString>
 						<string name="Name">EnemyStandard</string>
 						<string name="ScriptGuid">{8DC04706-7BA7-4EB8-B9B6-51A3446370E4}</string>
 						<ProtectedString name="Source"><![CDATA[local BaseEnemy: BaseEnemy = require(game.ReplicatedStorage.Modules.Enemies.BaseEnemy)
----@type PathingService
-local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
+local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
+local Table = require(game.ReplicatedStorage.Modules.Utility.Table)
 
 ---@class StandardEnemy
 local StandardEnemy = {
@@ -5811,9 +5806,9 @@ StandardEnemy.__index = StandardEnemy
 setmetatable(StandardEnemy, BaseEnemy)
 
 ---@return StandardEnemy
-function StandardEnemy.new()	
-	---@type StandardEnemy
-	local self = BaseEnemy.new(EnemyStats.Standard)
+function StandardEnemy.new(stats)	
+	local stats = Table.Merge(EnemyStats.Standard, stats)
+	local self: StandardEnemy = BaseEnemy.new(stats)
 	setmetatable(self, StandardEnemy)
 	
 	self.path = PathingService:GetNextPath()
@@ -6037,6 +6032,34 @@ end
 
 
 return ConnectionManager]]></ProtectedString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBXC09926654F3F4B9E911D3088C72EDC32">
+					<Properties>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<Content name="LinkedSource"><null></null></Content>
+						<string name="Name">Table</string>
+						<string name="ScriptGuid">{9AB0FBC1-A20D-4781-8D64-E00EE77A0D31}</string>
+						<ProtectedString name="Source"><![CDATA[local Table = {}
+
+function Table.Copy(t1)
+	local t = {}
+	for k, v in pairs(t1) do
+		t[k] = v
+	end
+	return t
+end
+
+function Table.Merge(t1, t2)
+	local t = Table.Copy(t1)
+	for k, v in pairs(t2) do
+		t[k] = v
+	end
+	return t
+end
+
+return Table]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
@@ -6287,10 +6310,6 @@ function EnemyController.new()
 		_events = {},
 	}, EnemyController)
 	
-	self.enemiesInPool = function()
-		return EnemyPool._count
-	end
-	
 	self.EnemyAdded = EnemyPool._events.enemy_added.Event
 	self.EnemyRemoved = EnemyPool._events.enemy_removed.Event
 	
@@ -6298,14 +6317,19 @@ function EnemyController.new()
 end
 
 function EnemyController.SpawnEnemy(enemyType: Enemy, waveNumber: number)
-	local enemy = enemyType.new()
+	local enemy = enemyType.new({wave = waveNumber})
 	EnemyPool.Add(enemy)
 	
 	local died_connection
-	died_connection = enemy.Died:Connect(function()
+	local path_finished_connection
+	local function onEnemyRemove()
 		died_connection:Disconnect()
+		path_finished_connection:Disconnect()
 		EnemyPool.Remove(enemy)
-	end)
+	end
+	
+	died_connection = enemy.Died:Connect(onEnemyRemove)
+	path_finished_connection = enemy.FollowPathFinished:Connect(onEnemyRemove)
 	
 	return enemy
 end
@@ -14448,7 +14472,7 @@ type EnemyStats = {
 	health: number,
 	speed: number,
 	name: string,
-	model: BasePart
+	model: BasePart | Model
 }
 
 local stats: {[string]: EnemyStats} = {

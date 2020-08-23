@@ -1,8 +1,7 @@
----@type BaseEnemy
-local BaseEnemy = require(game.ReplicatedStorage.Modules.Enemies.BaseEnemy)
----@type PathingService
-local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
+local BaseEnemy: BaseEnemy = require(game.ReplicatedStorage.Modules.Enemies.BaseEnemy)
+local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
+local Table = require(game.ReplicatedStorage.Modules.Utility.Table)
 
 ---@class FastEnemy
 local FastEnemy = {
@@ -12,9 +11,9 @@ FastEnemy.__index = FastEnemy
 setmetatable(FastEnemy, BaseEnemy)
 
 ---@return FastEnemy
-function FastEnemy.new()	
-	---@type FastEnemy
-	local self = BaseEnemy.new(EnemyStats.Fast)
+function FastEnemy.new(stats)	
+	local stats = Table.Merge(EnemyStats.Standard, stats)
+	local self: FastEnemy = BaseEnemy.new(stats)
 	setmetatable(self, FastEnemy)
 	
 	self.path = PathingService:GetNextPath()
