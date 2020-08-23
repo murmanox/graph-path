@@ -41,6 +41,16 @@ function WaveSpawner.new(paths)
 	self.enemiesInWave = {}
 	
 	self.WaveFinished = self._events.waveFinished.Event
+
+	EnemyController.EnemyRemoved:Connect(function(enemy)
+		local wave = enemy.wave
+		if wave then
+			self.enemiesInWave[wave] -= 1
+			if not self.isSpawningEnemies and self.enemiesInWave[wave] == 0 then
+				self._events.waveFinished:Fire(wave)
+			end
+		end
+	end)
 	
 	return self
 end
@@ -110,30 +120,11 @@ function WaveSpawner:SpawnWave()
 	end
 end
 
-
 function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
-	print("spawning enemy:", enemyType)
-	-- local enemy: BaseEnemy = EnemyFactory.SpawnEnemy(enemyType)
-	local enemy = EnemyController.SpawnEnemy(enemyType)
-	
+	-- print("spawning enemy:", enemyType)
 	local waveNumber = self.waveNumber
+	local enemy = EnemyController.SpawnEnemy(enemyType, waveNumber)
 	self.enemiesInWave[waveNumber] += 1
-	
-	local died_connection
-	local path_complete_connection
-	local function removeEnemyFromWave()
-		died_connection:Disconnect()
-		path_complete_connection:Disconnect()
-		self.enemiesInWave[waveNumber] -= 1
-		
-		if not self.isSpawningEnemies and self.enemiesInWave[waveNumber] == 0 then
-			self._events.waveFinished:Fire(waveNumber)
-		end
-	end
-	
-	died_connection = enemy.Died:Connect(removeEnemyFromWave)
-	path_complete_connection = enemy.FollowPathFinished:Connect(removeEnemyFromWave)
-
 	return enemy
 end
 
