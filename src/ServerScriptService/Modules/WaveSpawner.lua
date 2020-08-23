@@ -15,7 +15,7 @@ WaveSpawner.Settings = {
 	AutomaticallyStartNextWave = true,
 	WaveMustFinishBeforeNext = true,
 	EnemySpawnDelay = 2,
-	WaveSpawnDelay = 1,
+	WaveSpawnDelay = 2,
 }
 
 local enemyWaveMap = {
@@ -85,7 +85,7 @@ function WaveSpawner:OnHeartbeat(dt)
 	end
 end
 
-
+-- this should only spawn 1 wave
 function WaveSpawner:SpawnWave()
 	if self.isWaveInProgress then
 		warn("WaveSpawner:SpawnWave is being called multiple times")
@@ -121,7 +121,7 @@ function WaveSpawner:SpawnWave()
 end
 
 function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
-	-- print("spawning enemy:", enemyType)
+	-- print("spawning enemy:", enemyType, "Wave:", self.waveNumber)
 	local waveNumber = self.waveNumber
 	local enemy = EnemyController.SpawnEnemy(enemyType, waveNumber)
 	self.enemiesInWave[waveNumber] += 1
