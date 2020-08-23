@@ -4729,10 +4729,11 @@ EnemyController.EnemyRemoved:Connect(updateLabel)]]></ProtectedString>
 					<Content name="LinkedSource"><null></null></Content>
 					<string name="Name">WaveSpawner</string>
 					<string name="ScriptGuid">{BFA7D618-6DA1-46CD-A466-BCF9713B57A9}</string>
-					<ProtectedString name="Source"><![CDATA[local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
-local Enemy = require(game.ReplicatedStorage.Modules.Enemy)
+					<ProtectedString name="Source"><![CDATA[local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
+---@type Enemy
+local Enemy = EnemyModule.Enemy
 ---@type EnemyFactory
---local EnemyFactory = EnemyModule.EnemyFactory
+local EnemyFactory = EnemyModule.EnemyFactory
 
 local Waves = require(game.ReplicatedStorage.Configs.Waves)
 
@@ -4749,39 +4750,15 @@ WaveSpawner.Settings = {
 	WaveSpawnDelay = 1,
 }
 
-local enemyWaveMap = {
-	Remove = function(self, e)
-		self[e] = nil
-	end,
-}
-
 ---@return WaveSpawner
 function WaveSpawner.new(paths)
 	---@type WaveSpawner
-	local self = setmetatable({
-		_events = {
-			waveFinished = Instance.new("BindableEvent")
-		}
-	}, WaveSpawner)
+	local self = setmetatable({}, WaveSpawner)
 	
 	self.paths = paths
 	self.waveNumber = 1
 	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
-	self.isWaveInProgress = false
-	self.isSpawningEnemies = false
-	self.enemiesInWave = {}
-	
-	self.WaveFinished = self._events.waveFinished.Event
-
-	EnemyController.EnemyRemoved:Connect(function(enemy)
-		local wave = enemy.wave
-		if wave then
-			self.enemiesInWave[wave] -= 1
-			if not self.isSpawningEnemies and self.enemiesInWave[wave] == 0 then
-				self._events.waveFinished:Fire(wave)
-			end
-		end
-	end)
+	self.waveInProgress = false
 	
 	return self
 end
@@ -4799,11 +4776,11 @@ end
 function WaveSpawner:Reset()
 	self.waveNumber = 1
 	self.countdown = WaveSpawner.Settings.WaveSpawnDelay
-	self.isWaveInProgress = false
+	self.waveInProgress = false
 end
 
 function WaveSpawner:OnHeartbeat(dt)
-	if self.isWaveInProgress or self.isSpawningEnemies then
+	if self.waveInProgress then
 		return
 	end
 
@@ -4818,15 +4795,13 @@ end
 
 
 function WaveSpawner:SpawnWave()
-	if self.isWaveInProgress then
+	if self.waveInProgress then
 		warn("WaveSpawner:SpawnWave is being called multiple times")
 		return
 	end
 	
 	print("Starting Wave:", self.waveNumber)
-	self.enemiesInWave[self.waveNumber] = 0
-	self.isWaveInProgress = true
-	self.isSpawningEnemies = true
+	self.waveInProgress = true
 	
 	local wave = Waves[self.waveNumber]
 	for _, enemy in ipairs(wave) do
@@ -4834,29 +4809,24 @@ function WaveSpawner:SpawnWave()
 		local amountToSpawn = enemy[2]
 		
 		for i = 1, amountToSpawn do
-			local e = self:SpawnEnemy(enemyToSpawn)
+			self:SpawnEnemy(enemyToSpawn)
 			wait(WaveSpawner.Settings.EnemySpawnDelay)
 		end
 	end
 	
-	self.isSpawningEnemies = false
-	if WaveSpawner.Settings.WaveMustFinishBeforeNext then
-		self.WaveFinished:Wait()
-	end
-	
-	self.isWaveInProgress = false
+	self.waveInProgress = false
 	self.waveNumber = self.waveNumber + 1
 	if not Waves[self.waveNumber] then
 		self:Stop()
 	end
 end
 
-function WaveSpawner:SpawnEnemy(enemyType): BaseEnemy
-	-- print("spawning enemy:", enemyType)
-	local waveNumber = self.waveNumber
-	local enemy = EnemyController.SpawnEnemy(enemyType, waveNumber)
-	self.enemiesInWave[waveNumber] += 1
-	return enemy
+
+function WaveSpawner:SpawnEnemy(enemyType)
+	print("spawning enemy:", enemyType)
+	local thread = Instance.new("BindableEvent")
+	thread.Event:Connect(function() EnemyFactory.SpawnEnemy(enemyType) end)
+	thread:Fire()
 end
 
 
@@ -5136,10 +5106,6 @@ function initMap()
 	wave_spawner:Start()
 end
 
-game.Players.PlayerAdded:Connect(function(player)
-	game.StarterGui.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
-end)
-
 wait(2)
 initMap()]]></ProtectedString>
 				<BinaryString name="Tags"></BinaryString>
@@ -5204,136 +5170,6 @@ end]]></ProtectedString>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="Folder" referent="RBX3A320372F2E3406885CBBB0D0910E91E">
-				<Properties>
-					<BinaryString name="AttributesSerialize"></BinaryString>
-					<string name="Name">Components</string>
-					<BinaryString name="Tags"></BinaryString>
-				</Properties>
-				<Item class="Script" referent="RBX178F561D0FC64974B344758FA0AC2D1B">
-					<Properties>
-						<BinaryString name="AttributesSerialize"></BinaryString>
-						<bool name="Disabled">false</bool>
-						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">Test_HealthComponent</string>
-						<string name="ScriptGuid">{9D69990B-B12A-4B3F-8A24-5D2268E14511}</string>
-						<ProtectedString name="Source"><![CDATA[local Settings = require(game.ServerScriptService.Configs.ServerSettings)
-
-if not Settings.Testing.Components.Health then
-	return
-end
-
-local caseCount, successCount, failureCount = 0, 0, 0
-local failedMessages = {}
-function testCase(v1: any, v2: any, message: string)
-	caseCount += 1
-	local case = (v1 == v2)
-	if case then
-		successCount += 1
-	else
-		failureCount += 1
-		table.insert(failedMessages, message .. ", Expected: " .. tostring(v2) .. " Got: " .. tostring(v1))
-	end
-end
-
-function assertFinished()
-	print("Test Cases:", caseCount)
-	print("Successful cases:", successCount)
-	print("Failed Cases:", failureCount)
-	
-	for k, message in pairs(failedMessages) do
-		print("    Failed:", message)
-	end
-	print()
-		
-	caseCount, successCount, failureCount = 0, 0, 0
-	failedMessages = {}
-end
-
-print("Testing Health Component")
-
-local health: Health = require(game.ReplicatedStorage.Modules.Components.Health)
-
-local fullHealthValue = 100
-local halfHealthValue = fullHealthValue / 2
-
--- Test initialising health object
-local fullHealth = health.new(fullHealthValue)
-local halfHealth = health.new(fullHealthValue, halfHealthValue)
-
--- Test getter methods
-testCase(fullHealth:GetHealth() ~= nil, true, "get current health")
-testCase(fullHealth:GetMaxHealth() ~= nil, true, "get max health")
-
--- Test initialised object
-testCase(fullHealth:GetMaxHealth(), fullHealthValue, "max health is set to first parameter")
-testCase(fullHealth:GetHealth(), fullHealthValue, "health is set to max health by default")
-testCase(halfHealth:GetMaxHealth(), fullHealthValue, "max health is set to first parameter")
-testCase(halfHealth:GetHealth(), halfHealthValue, "second parameter sets starting health value")
-
--- Test setter methods
-fullHealth:SetHealth(75)
-testCase(fullHealth:GetHealth(), 75, "set health can change health")
-fullHealth:SetHealth(fullHealth:GetMaxHealth() + 20)
-testCase(fullHealth:GetHealth(), fullHealth:GetMaxHealth(), "health cannot be set above max health")
-fullHealth:SetHealth(-20)
-testCase(fullHealth:GetHealth(), 0, "health cannot be set below 0 health")
-
--- Test damage
-local damage = 20
-local damageTaken
-fullHealth:SetHealth(fullHealthValue)
-fullHealth.Damaged:Connect(function(damageValue)
-	damageTaken = damageValue
-end)
-
-fullHealth:TakeDamage(damage)
-testCase(fullHealth:GetHealth(), fullHealthValue - damage, "damage is taken from health")
-testCase(damageTaken, damage, "return value from Damaged event is the damage applied")
-
-fullHealth:SetHealth(damage - 2)
-fullHealth:TakeDamage(damage)
-testCase(damageTaken, damage - 2, "damage past 0 health is ignored")
-
---Test healing
-local startingHealth = fullHealthValue - 15
-local amountHealed
-fullHealth:SetHealth(startingHealth)
-fullHealth.Healed:Connect(function(healValue)
-	amountHealed = healValue
-end)
-
-fullHealth:Heal(10)
-testCase(fullHealth:GetHealth(), fullHealthValue - 5, "heal health")
-testCase(amountHealed, 10, "correct heal value returned for less than max health")
-fullHealth:Heal(10)
-testCase(fullHealth:GetHealth(), fullHealth:GetMaxHealth(), "can't heal above max health")
-testCase(amountHealed, 5, "health healed past max health is ignored")
-
--- Test cleanup
-local reference
-do
-	local healthObject = health.new(100)
-	healthObject.Damaged:Connect(function(value)
-		print(healthObject)
-	end)
-	reference = setmetatable({
-		healthObject,
-		healthObject._events,
-		healthObject._events.damaged,
-	}, {
-		__mode = "v"
-	})
-	healthObject:Destroy()
-end
-wait(4)
-testCase(#reference, 0, "object is garbage collected when it is destroyed and out of scope")
-
-assertFinished()]]></ProtectedString>
-						<BinaryString name="Tags"></BinaryString>
-					</Properties>
-				</Item>
-			</Item>
 		</Item>
 		<Item class="Folder" referent="RBXFBBDD02C670F44E9AD8B28A7A332D6F9">
 			<Properties>
@@ -5350,9 +5186,6 @@ assertFinished()]]></ProtectedString>
 					<ProtectedString name="Source"><![CDATA[local Settings = {
 	Testing = {
 		test_require_all_modules = false,
-		Components = {
-			Health = false,
-		},
 	},
 }
 
@@ -5572,15 +5405,31 @@ local StandardEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyStanda
 local FastEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast)
 local SlowEnemy = require(game.ReplicatedStorage.Modules.Enemies.EnemyFast)
 
+local module = {}
+
+
+local function newEnemyType(name, class)
+	local t = setmetatable({
+		name = name, class = class
+	},
+	{
+		__tostring = function(t) return t.name end,
+		__index = function(t, k) return t.class[k] end
+	})
+	
+	return t
+end
+
 
 ---@class Enemy
 local Enemy = {}
 Enemy.__index = Enemy
+Enemy.Pool = {}
 
 Enemy.Type, Enemy._TypeMetatable = {
-	Standard = StandardEnemy,
-	Fast = FastEnemy,
-	Slow = SlowEnemy,
+	Standard = newEnemyType("Standard", StandardEnemy),
+	Fast = newEnemyType("Fast", FastEnemy),
+	Slow = newEnemyType("Slow", SlowEnemy),
 }, {
 	__index = function(t, k)
 		error(k .. " is not a valid enemy type")
@@ -5588,14 +5437,34 @@ Enemy.Type, Enemy._TypeMetatable = {
 }
 setmetatable(Enemy.Type, Enemy._TypeMetatable)
 
-function Enemy.new()
-	-- base class for all enemies ??
-	local self = setmetatable({}, Enemy)
-	
-	return self
+
+function Enemy.GetEnemyFromInstance(instance)
+	return Enemy.Pool[instance]
 end
 
-return Enemy]]></ProtectedString>
+function Enemy.RemoveEnemyFromPool(enemy)
+	Enemy.Pool[enemy.model] = nil
+end
+
+---@class EnemyFactory
+local EnemyFactory = {}
+
+---@return EnemyFactory
+function EnemyFactory.SpawnEnemy(enemyType)
+	local e = enemyType.new()
+	Enemy.Pool[e.model] = e
+	local diedEvent
+	diedEvent = e.Died:Connect(function()
+		Enemy.RemoveEnemyFromPool(e)
+		diedEvent:Disconnect()
+	end)
+	return e
+end
+
+module.Enemy = Enemy
+module.EnemyFactory = EnemyFactory
+
+return module]]></ProtectedString>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
@@ -5612,19 +5481,15 @@ return Enemy]]></ProtectedString>
 						<string name="Name">BaseEnemy</string>
 						<string name="ScriptGuid">{DF14C524-080D-485E-A334-CA55BF2D3983}</string>
 						<ProtectedString name="Source"><![CDATA[local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
-local Health: Health = require(game.ReplicatedStorage.Modules.Components.Health)
+local ServerValue: ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
 local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local TweenService = game:GetService("TweenService")
 
 local HEALTH_GUI = game.ReplicatedStorage.GUI.EnemyGui
 
--- TODO: rework enemy class to be more easily overridable
 ---@class BaseEnemy
 local BaseEnemy = {}
 BaseEnemy.__index = BaseEnemy
-BaseEnemy.__tostring = function(t)
-	return t.ClassName or "Unnamed enemy"
-end
 
 ---@return BaseEnemy
 function BaseEnemy.new(stats: EnemyStats): BaseEnemy
@@ -5633,15 +5498,13 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 		_events = {
 			moveToCompleted = Instance.new("BindableEvent"),
 			died = Instance.new("BindableEvent"),
-			followPathFinished = Instance.new("BindableEvent"),
 		},
 	}, BaseEnemy)
 	
-	-- init values
 	self.name = stats.name
 	self.model = stats.model:Clone()
-	self.wave = stats.wave or 1
-	self.health = Health.new(stats.health)
+	self.maxHealth = stats.health
+	self.health = ServerValue.new(stats.health)
 	self.speed = stats.speed
 	self.path = nil
 	self.isAlive = true
@@ -5649,42 +5512,21 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	self.currentWaypoint = nil
 	self.nextWaypoint = nil
 	
-	-- init events
-	self.MoveToCompleted = self._events.moveToCompleted.Event
-	self.Died = self._events.died.Event
-	self.FollowPathFinished = self._events.followPathFinished.Event
-	
-	local c = self.health.Changed:Connect(function(healthValue)
-		if self.isAlive and healthValue <= 0 then
+	self._connections.health = self.health.Changed:Connect(function(newValue)
+		if newValue <= 0 then
 			self:OnDead()
 		end
 	end)
-	self._connections.health_changed = c
+	
+	self.MoveToCompleted = self._events.moveToCompleted.Event
+	self.Died = self._events.died.Event
 
 	return self
 end
 
-local function DestroyEvents(self)
-	for k, v in pairs(self._events) do
-		if v.Destroy then
-			v:Destroy()
-		end
-	end
-end
-
-local function DisconnectConnections(self)
-	for k, v in pairs(self._connections) do
-		if v.Disconnect then
-			v:Disconnect()
-		end
-	end
-end
-
 function BaseEnemy:Destroy()
 	self.model:Destroy()
-	self.health:Destroy()
-	DestroyEvents(self)
-	DisconnectConnections(self)
+	self._connections.health:Disconnect()
 end
 
 function BaseEnemy:ShowGui()
@@ -5693,12 +5535,12 @@ end
 function BaseEnemy:HideGui()
 end
 
-function BaseEnemy:TakeDamage(damage: number)
-	self.health:TakeDamage(damage)
+function BaseEnemy:TakeDamage(damageValue)
+	self.health:Set(self.health:Get() - damageValue)
 end
 
 function BaseEnemy:OnDead()
-	self.isAlive = false
+	print("I am dead :(")
 	self.model.Transparency = 0.75
 	self._events.died:Fire()
 end
@@ -5722,8 +5564,6 @@ function BaseEnemy:FollowPath()
 		tween.Completed:Wait()
 		self.currentWaypoint = self.nextWaypoint
 	end
-	
-	self._events.followPathFinished:Fire()
 	self:Destroy()
 	--[[
 	for _, v in ipairs(self.path) do
@@ -5758,9 +5598,7 @@ local PathingService = require(game.ServerScriptService.Modules.Services.Pathing
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 
 ---@class FastEnemy
-local FastEnemy = {
-	ClassName = "Fast",
-}
+local FastEnemy = {}
 FastEnemy.__index = FastEnemy
 setmetatable(FastEnemy, BaseEnemy)
 
@@ -5794,21 +5632,19 @@ return FastEnemy]]></ProtectedString>
 						<string name="Name">EnemyStandard</string>
 						<string name="ScriptGuid">{8DC04706-7BA7-4EB8-B9B6-51A3446370E4}</string>
 						<ProtectedString name="Source"><![CDATA[local BaseEnemy: BaseEnemy = require(game.ReplicatedStorage.Modules.Enemies.BaseEnemy)
-local PathingService: PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
+---@type PathingService
+local PathingService = require(game.ServerScriptService.Modules.Services.PathingService)
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
-local Table = require(game.ReplicatedStorage.Modules.Utility.Table)
 
 ---@class StandardEnemy
-local StandardEnemy = {
-	ClassName = "Standard",
-}
+local StandardEnemy = {}
 StandardEnemy.__index = StandardEnemy
 setmetatable(StandardEnemy, BaseEnemy)
 
 ---@return StandardEnemy
-function StandardEnemy.new(stats)	
-	local stats = Table.Merge(EnemyStats.Standard, stats)
-	local self: StandardEnemy = BaseEnemy.new(stats)
+function StandardEnemy.new()	
+	---@type StandardEnemy
+	local self = BaseEnemy.new(EnemyStats.Standard)
 	setmetatable(self, StandardEnemy)
 	
 	self.path = PathingService:GetNextPath()
@@ -5843,9 +5679,7 @@ local PathingService = require(game.ServerScriptService.Modules.Services.Pathing
 local EnemyStats = require(game.ReplicatedStorage.Configs.EnemyStats)
 
 ---@class SlowEnemy
-local SlowEnemy = {
-	ClassName = "Slow",
-}
+local SlowEnemy = {}
 SlowEnemy.__index = SlowEnemy
 setmetatable(SlowEnemy, BaseEnemy)
 
@@ -5872,33 +5706,13 @@ return SlowEnemy]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX3F59F257F4514195A8489F90D13841C3">
+				<Item class="ModuleScript" referent="RBX5E5C7494789C414FAEA5CDAD413D764C">
 					<Properties>
 						<BinaryString name="AttributesSerialize"></BinaryString>
 						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">CompositionStandardEnemy</string>
-						<string name="ScriptGuid">{30BAC16B-2E2F-46CA-A7BE-D9F653802D87}</string>
-						<ProtectedString name="Source"><![CDATA[local Health: Health = require(game.ReplicatedStorage.Modules.Components.Health)
-local EnemyController:EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
-
----@class TestEnemyStandard
-local TestEnemyStandard = {}
-TestEnemyStandard.__index = TestEnemyStandard
-
----@return TestEnemyStandard
-function TestEnemyStandard.new()
-	---@type TestEnemyStandard
-	local self = setmetatable({
-		health = Health.new(100),
-	}, TestEnemyStandard)
-	
-	
-	
-	return self
-end
-
-
-return TestEnemyStandard]]></ProtectedString>
+						<string name="Name">BaseGroundEnemy</string>
+						<string name="ScriptGuid"></string>
+						<ProtectedString name="Source"></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
@@ -5946,7 +5760,7 @@ function ServerValue.new(value, overrideClass)
 	local t = typeof(value)
 	local valueType = overrideClass or valueMap[t]
 	
-	assert(valueType ~= nil, "type of passed value is not recognised")
+	assert(valueType ~= nil)
 	
 	---@type ServerValue
 	local self = setmetatable({
@@ -5962,8 +5776,8 @@ function ServerValue.new(value, overrideClass)
 end
 
 function ServerValue:Set(value)
-	self._value = value
 	self._object.Value = value
+	self._value = value
 end
 
 function ServerValue:Get()
@@ -6006,63 +5820,6 @@ return Class]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX9D27B7B9246F491899F9CD8998087D25">
-					<Properties>
-						<BinaryString name="AttributesSerialize"></BinaryString>
-						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">ConnectionManager</string>
-						<string name="ScriptGuid">{7A2D18FA-BE2B-4A10-AFCE-EBB119321F07}</string>
-						<ProtectedString name="Source"><![CDATA[---@class ConnectionManager
-local ConnectionManager = {}
-ConnectionManager.__index = ConnectionManager
-
----@return ConnectionManager
-function ConnectionManager.new()
-	---@type ConnectionManager
-	local self = setmetatable({}, ConnectionManager)
-	
-	
-	
-	return self
-end
-
-function ConnectionManager:NewConnection()
-	
-end
-
-
-return ConnectionManager]]></ProtectedString>
-						<BinaryString name="Tags"></BinaryString>
-					</Properties>
-				</Item>
-				<Item class="ModuleScript" referent="RBXC09926654F3F4B9E911D3088C72EDC32">
-					<Properties>
-						<BinaryString name="AttributesSerialize"></BinaryString>
-						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">Table</string>
-						<string name="ScriptGuid">{9AB0FBC1-A20D-4781-8D64-E00EE77A0D31}</string>
-						<ProtectedString name="Source"><![CDATA[local Table = {}
-
-function Table.Copy(t1)
-	local t = {}
-	for k, v in pairs(t1) do
-		t[k] = v
-	end
-	return t
-end
-
-function Table.Merge(t1, t2)
-	local t = Table.Copy(t1)
-	for k, v in pairs(t2) do
-		t[k] = v
-	end
-	return t
-end
-
-return Table]]></ProtectedString>
-						<BinaryString name="Tags"></BinaryString>
-					</Properties>
-				</Item>
 			</Item>
 			<Item class="Folder" referent="RBX682DC4CD1A9D4C17BB8087846640DA9D">
 				<Properties>
@@ -6077,8 +5834,7 @@ return Table]]></ProtectedString>
 						<string name="Name">BaseTower</string>
 						<string name="ScriptGuid">{64E7DC5E-0281-462E-9815-1D02CBF1186B}</string>
 						<ProtectedString name="Source"><![CDATA[---@type Enemy
--- local Enemy = require(game.ReplicatedStorage.Modules.Enemy).Enemy
-local EnemyController: EnemyController = require(game.ReplicatedStorage.Modules.Controllers.EnemyController)
+local Enemy = require(game.ReplicatedStorage.Modules.Enemy).Enemy
 
 ---@class BaseTower
 local BaseTower = {}
@@ -6091,7 +5847,6 @@ function BaseTower.new(stats)
 	
 	self.range = stats.range
 	self.speed = stats.speed
-	self.damage = stats.damage
 	self.timeBetweenShots = 1 / self.speed
 	self.model = stats.model
 	self.name = stats.name
@@ -6109,12 +5864,12 @@ function BaseTower:ShootAt(target)
 	if not target then return end
 	self.cooldown = self.timeBetweenShots
 	self.model.CFrame = CFrame.new(self.model.Position, target.model.Position)
-	target:TakeDamage(self.damage)
+	target:TakeDamage(100)
 end
 
 function BaseTower:FindTarget()
 	for _, enemy in ipairs(workspace.Level.Enemies:GetChildren()) do
-		local enemyObject = EnemyController.GetEnemyFromInstance(enemy)
+		local enemyObject = Enemy.GetEnemyFromInstance(enemy)
 		if enemyObject and enemyObject.isAlive then
 			if (enemy.Position - self.model.Position).Magnitude <= self.range then
 				return enemyObject
@@ -6132,216 +5887,6 @@ function BaseTower:OnHeartbeat(dt)
 end
 
 return BaseTower]]></ProtectedString>
-						<BinaryString name="Tags"></BinaryString>
-					</Properties>
-				</Item>
-			</Item>
-			<Item class="Folder" referent="RBXCEA4FDBA82784D2589504D60C5F38D29">
-				<Properties>
-					<BinaryString name="AttributesSerialize"></BinaryString>
-					<string name="Name">Components</string>
-					<BinaryString name="Tags"></BinaryString>
-				</Properties>
-				<Item class="ModuleScript" referent="RBX09C96F98C262456C9F3E9E727168B95C">
-					<Properties>
-						<BinaryString name="AttributesSerialize"></BinaryString>
-						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">Health</string>
-						<string name="ScriptGuid">{9A0BFB2E-327A-4A68-8383-B3813C386E06}</string>
-						<ProtectedString name="Source"><![CDATA[local ServerValue = require(game.ReplicatedStorage.Modules.Utility.ServerValue)
-type Health = {}
-
---[[
-	Events:
-		Damaged: Fires whenever current health is reduced
-			Params:
-				damage taken: number
-		Healed: Fires whenever current health is increased
-			Params:
-				amount healed: number
-		Changed: Fires whenever the current health or max health changes
-			Params:
-				current health: number
-				max health: number
-]]
-
----@class Health
-local Health = {}
-Health.__index = Health
-
-function Health.new(maxHealth: number, startingHealth: number?): Health
-	local self: Health = {
-		_maxHealth = ServerValue.new(maxHealth),
-		_health = ServerValue.new(startingHealth or maxHealth),
-		_events = {
-			healed = Instance.new("BindableEvent"),
-			damaged = Instance.new("BindableEvent"),
-			changed = Instance.new("BindableEvent"),
-		},
-	}
-	
-	-- init Events
-	self.Healed = self._events.healed.Event
-	self.Damaged = self._events.damaged.Event
-	self.Changed = self._events.changed.Event
-	
-	local onHealthChanged = function()
-		self._events.changed:Fire(self._health:Get(), self._maxHealth:Get())
-	end
-	
-	self._connections = {
-		maxHealth = self._maxHealth.Changed:Connect(onHealthChanged),
-		health = self._health.Changed:Connect(onHealthChanged),
-	}
-
-	return setmetatable(self, Health)
-end
-
-function Health:TakeDamage(damage)
-	local currentHealth = self:GetHealth()
-	local damageToTake = damage >= currentHealth and currentHealth or damage
-	self:SetHealth(currentHealth - damageToTake)
-	self._events.damaged:Fire(damageToTake)
-end
-
-function Health:Heal(healAmount)
-	local currentHealth = self:GetHealth()
-	local missingHealth = self:GetMaxHealth() - currentHealth
-	local amountToHeal = healAmount <= missingHealth and healAmount or missingHealth
-	self:SetHealth(currentHealth + amountToHeal)
-	self._events.healed:Fire(amountToHeal)
-end
-
-function Health:GetMaxHealth()
-	return self._maxHealth:Get()
-end
-
-function Health:SetMaxHealth(newMaxHealthValue)
-	self._maxHealth:Set(newMaxHealthValue)
-end
-
-function Health:GetHealth()
-	return self._health:Get()
-end
-
-function Health:SetHealth(newHealthValue)
-	local healthToSet = math.clamp(newHealthValue, 0, self._maxHealth:Get())
-	self._health:Set(healthToSet)
-end
-
--- Prepares Health for garbage collection once all references to it fall out of scope or are nil
-function Health:Destroy()
-	for k, v in pairs(self._connections) do
-		if v.Disconnect then
-			v:Disconnect()
-		end
-	end
-	for k, v in pairs(self._events) do
-		if v.Destroy then
-			v:Destroy()
-		end
-	end
-end
-
-return Health]]></ProtectedString>
-						<BinaryString name="Tags"></BinaryString>
-					</Properties>
-				</Item>
-			</Item>
-			<Item class="Folder" referent="RBX07165BEB07084F428D3B0AC54610109B">
-				<Properties>
-					<BinaryString name="AttributesSerialize"></BinaryString>
-					<string name="Name">Controllers</string>
-					<BinaryString name="Tags"></BinaryString>
-				</Properties>
-				<Item class="ModuleScript" referent="RBXB57D723B532A4031B044BCF8059C815C">
-					<Properties>
-						<BinaryString name="AttributesSerialize"></BinaryString>
-						<Content name="LinkedSource"><null></null></Content>
-						<string name="Name">EnemyController</string>
-						<string name="ScriptGuid">{9B995603-A35B-40A5-930D-BB4EAF5E28A5}</string>
-						<ProtectedString name="Source"><![CDATA[-- local ConnectionManager = require(game.ReplicatedStorage.Modules.Utility.ConnectionManager)
-
----@class EnemyController
-local EnemyController = {}
-EnemyController.__index = EnemyController
-
-local EnemyPool = {
-	_count = 0,
-	_pool = {},
-	_events = {
-		enemy_added = Instance.new("BindableEvent"),
-		enemy_removed = Instance.new("BindableEvent"),
-	},
-	GetCount = function(self)
-		return self._count
-	end,
-}
-
-function EnemyPool.Add(enemy)
-	assert(enemy, "EnemyPool.Add was called with a nil value")
-	assert(enemy.model, "Passed enemy has no model property" .. (", " .. tostring(enemy.ClassName) or ""))
-	EnemyPool._pool[enemy.model] = enemy
-	EnemyPool._count += 1
-	EnemyPool._events.enemy_added:Fire(enemy)
-end
-
-function EnemyPool.Remove(enemy)
-	local index
-	if EnemyPool._pool[enemy] then
-		index = enemy
-	elseif EnemyPool._pool[enemy.model] then
-		index = enemy.model
-	end
-	if index then
-		local removedEnemy = EnemyPool._pool[index]
-		EnemyPool._pool[index] = nil
-		EnemyPool._count -= 1
-		EnemyPool._events.enemy_removed:Fire(removedEnemy)
-	end
-end
-
-
----@return EnemyController
-function EnemyController.new()
-	---@type EnemyController
-	local self = setmetatable({
-		-- _connections = ConnectionManager.new()
-		_events = {},
-	}, EnemyController)
-	
-	self.EnemyAdded = EnemyPool._events.enemy_added.Event
-	self.EnemyRemoved = EnemyPool._events.enemy_removed.Event
-	
-	return self
-end
-
-function EnemyController.SpawnEnemy(enemyType: Enemy, waveNumber: number)
-	local enemy = enemyType.new({wave = waveNumber})
-	EnemyPool.Add(enemy)
-	
-	local died_connection
-	local path_finished_connection
-	local function onEnemyRemove()
-		died_connection:Disconnect()
-		path_finished_connection:Disconnect()
-		EnemyPool.Remove(enemy)
-	end
-	
-	died_connection = enemy.Died:Connect(onEnemyRemove)
-	path_finished_connection = enemy.FollowPathFinished:Connect(onEnemyRemove)
-	
-	return enemy
-end
-
-function EnemyController.GetEnemyFromInstance(instance: Model | BasePart)
-	return EnemyPool._pool[instance]
-end
-
-EnemyController.EnemyPool = EnemyPool
-EnemyController.Pool = EnemyController.EnemyPool
-
-return EnemyController.new()]]></ProtectedString>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
@@ -14418,7 +13963,9 @@ return EnemyController.new()]]></ProtectedString>
 					<Content name="LinkedSource"><null></null></Content>
 					<string name="Name">Waves</string>
 					<string name="ScriptGuid">{91211792-3185-4726-B3ED-DDE50F5CEACC}</string>
-					<ProtectedString name="Source"><![CDATA[local Enemy: Enemy = require(game.ReplicatedStorage.Modules.Enemy)
+					<ProtectedString name="Source"><![CDATA[local EnemyModule = require(game.ReplicatedStorage.Modules.Enemy)
+---@type Enemy
+local Enemy = EnemyModule.Enemy
 
 
 local Wave = {}
@@ -14472,7 +14019,7 @@ type EnemyStats = {
 	health: number,
 	speed: number,
 	name: string,
-	model: BasePart | Model
+	model: BasePart
 }
 
 local stats: {[string]: EnemyStats} = {
@@ -14510,7 +14057,6 @@ return stats]]></ProtectedString>
 	Standard = {
 		range = 10,
 		speed = 1,
-		damage = 50,
 		name = "Standard",
 		model = workspace.Tower,
 	},
