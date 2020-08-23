@@ -21,6 +21,9 @@ setmetatable(Enemy.Type, Enemy._TypeMetatable)
 
 function Enemy.new()
 	-- base class for all enemies ??
+	local self = setmetatable({}, Enemy)
+	
+	return self
 end
 
 return Enemy
