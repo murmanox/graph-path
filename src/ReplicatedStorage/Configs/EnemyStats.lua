@@ -6,7 +6,7 @@ type EnemyStats = {
 	health: number,
 	speed: number,
 	name: string,
-	model: BasePart
+	model: BasePart | Model
 }
 
 local stats: {[string]: EnemyStats} = {
