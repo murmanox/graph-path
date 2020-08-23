@@ -27,6 +27,7 @@ function BaseEnemy.new(stats: EnemyStats): BaseEnemy
 	-- init values
 	self.name = stats.name
 	self.model = stats.model:Clone()
+	self.wave = stats.wave or 1
 	self.health = Health.new(stats.health)
 	self.speed = stats.speed
 	self.path = nil
