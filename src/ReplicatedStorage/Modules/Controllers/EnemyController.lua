@@ -11,6 +11,9 @@ local EnemyPool = {
 		enemy_added = Instance.new("BindableEvent"),
 		enemy_removed = Instance.new("BindableEvent"),
 	},
+	GetCount = function(self)
+		return self._count
+	end,
 }
 
 function EnemyPool.Add(enemy)
@@ -18,21 +21,22 @@ function EnemyPool.Add(enemy)
 	assert(enemy.model, "Passed enemy has no model property" .. (", " .. tostring(enemy.ClassName) or ""))
 	EnemyPool._pool[enemy.model] = enemy
 	EnemyPool._count += 1
-	EnemyPool._events.enemy_added:Fire(EnemyPool._count)
+	EnemyPool._events.enemy_added:Fire(enemy)
 end
 
 function EnemyPool.Remove(enemy)
-	local index -- = (EnemyPool[enemy] and enemy or (EnemyPool[enemy.model] and enemy.model or nil))
+	local index
 	if EnemyPool._pool[enemy] then
 		index = enemy
 	elseif EnemyPool._pool[enemy.model] then
 		index = enemy.model
 	end
 	if index then
+		local removedEnemy = EnemyPool._pool[index]
 		EnemyPool._pool[index] = nil
 		EnemyPool._count -= 1
+		EnemyPool._events.enemy_removed:Fire(removedEnemy)
 	end
-	EnemyPool._events.enemy_removed:Fire(EnemyPool._count)
 end
 
 
@@ -50,23 +54,29 @@ function EnemyController.new()
 	return self
 end
 
-function EnemyController.SpawnEnemy(enemyType)
-	local enemy = enemyType.new()
+function EnemyController.SpawnEnemy(enemyType: Enemy, waveNumber: number)
+	local enemy = enemyType.new({wave = waveNumber})
 	EnemyPool.Add(enemy)
 	
 	local died_connection
-	died_connection = enemy.Died:Connect(function()
+	local path_finished_connection
+	local function onEnemyRemove()
 		died_connection:Disconnect()
+		path_finished_connection:Disconnect()
 		EnemyPool.Remove(enemy)
-	end)
+	end
+	
+	died_connection = enemy.Died:Connect(onEnemyRemove)
+	path_finished_connection = enemy.FollowPathFinished:Connect(onEnemyRemove)
 	
 	return enemy
 end
 
-function EnemyController.GetEnemyFromInstance(instance)
+function EnemyController.GetEnemyFromInstance(instance: Model | BasePart)
 	return EnemyPool._pool[instance]
 end
 
 EnemyController.EnemyPool = EnemyPool
+EnemyController.Pool = EnemyController.EnemyPool
 
 return EnemyController.new()
